@@ -1,8 +1,22 @@
 import { InputSnapshot } from 'ph/InputSnapshot'
 // TODO: index should resolve automatically...
 import { HadokenKeyboard } from 'ph/Keyboard/index'
-import * as Simple from 'ph/Keyboard/Simple'
+import * as Mapper from 'ph/Keyboard/Mapper'
+import * as Coalesse from "ph/Common/Coalesse";
 import { filterChain } from './Hadoken';
+
+const c = Phaser.Input.Keyboard.KeyCodes
+
+const keymap = {
+  [c.DOWN]:  'down',
+  [c.UP]:    'up',
+  [c.RIGHT]: 'right',
+  [c.LEFT]:  'left',
+  [c.A]:     'punch:light',
+  [c.O]:     'punch:hard',
+  [c.E]:     'kick:light',
+  [c.U]:     'kick:hard',
+}
 
 class Scene1 extends Phaser.Scene {
   hadoken: HadokenKeyboard
@@ -20,10 +34,10 @@ class Scene1 extends Phaser.Scene {
       {
         bufferLimitType: 'time',
         bufferLimit: 500,
-        keymapFn: Simple.Mapper,
-        coalesseFn: Simple.Coalesse,
+        keymapFn: Mapper.NewSimpleMapper(keymap),
+        coalesseFn: Coalesse.Coalesse,
         filters: filterChain(
-          Simple.NewFacingFilter(() => this.facing)
+          Coalesse.NewFacingFilter(() => this.facing)
         )
       },
     )
