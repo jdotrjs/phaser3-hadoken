@@ -1,0 +1,47 @@
+{
+  "name": "phaser3-hadoken",
+  "description": "A basic input processing plugin to support fighting-game style input events.",
+  "version": "0.1.0",
+  "main": "./dist/hadoken.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jdotrjs/phaser3-hadoken.git"
+  },
+  "homepage": "https://jdotrjs.github.io/demos/hadoken",
+  "bugs": {
+    "url": "https://github.com/jdotrjs/phaser3-hadoken/issues"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^7.1.5",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "eslint": "^4.19.1",
+    "file-loader": "^1.1.11",
+    "ts-loader": "^5.2.2",
+    "typescript": "^3.1.3",
+    "uglifyjs-webpack-plugin": "^1.3.0",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.1",
+    "webpack-dev-server": "^3.1.9"
+  },
+  "scripts": {
+    "build": "webpack --mode development",
+    "build:prod": "webpack --mode production",
+    "build:watch": "webpack --watch --mode development",
+    "lint": "eslint src/**.js",
+    "lint:fix": "eslint src/**.js --fix"
+  },
+  "dependencies": {
+    "phaser": "^3.15.1"
+  },
+  "keywords": [
+    "phaser",
+    "phaser3",
+    "input",
+    "input processing",
+    "hadoken",
+    "fighting game"
+  ]
+}

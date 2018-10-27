@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "module": "es6",
+    "target": "es5",
+    "allowJs": true,
+    "sourceMap": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings",
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "ph/*": ["./src/*"],
+    },
+  },
+}
