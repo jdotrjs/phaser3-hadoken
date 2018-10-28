@@ -6,6 +6,7 @@ import {
 } from 'ph/Hadoken'
 
 import { HasSameKeys, InputSnapshot } from 'ph/InputSnapshot'
+import { NoopMatch } from 'ph/Common/Matcher'
 
 export type MappingFn = (keycode: number) => SemanticInput | null
 
@@ -36,6 +37,9 @@ export class HadokenKeyboard {
       const filters = this.state.config.filters
       const filtered = filters ? filters(coalessed) : coalessed
       this.state.processedHistory.push(filtered)
+
+      const matcher = this.state.config.matchFn || NoopMatch
+      matcher(this.state.processedHistory)
     }
   }
 
@@ -51,12 +55,15 @@ export class HadokenKeyboard {
     const newSnapshot = {
       timestamp: now,
       state: {
-        [sem]: { pressed: now, meta: e.keyCode },
+        [sem]: { pressed: e.timeStamp, frameAdded: true },
         ...lastState.state,
       }
     }
 
     if (!HasSameKeys(newSnapshot, lastState)) {
+      Object.keys(newSnapshot.state).filter(k => k !== sem).forEach(k => {
+        newSnapshot.state[k].frameAdded = false
+      })
       this.state.rawHistory.push(newSnapshot)
     }
   }

@@ -1,21 +1,33 @@
+import { filterChain } from 'ph/Hadoken'
 import { InputSnapshot } from 'ph/InputSnapshot'
 // TODO: index should resolve automatically...
 import { HadokenKeyboard } from 'ph/Keyboard/index'
 import * as Mapper from 'ph/Keyboard/Mapper'
-import * as Coalesse from "ph/Common/Coalesse";
-import { filterChain } from './Hadoken';
+import * as Coalesse from "ph/Common/Coalesse"
+import * as Match from 'ph/Common/Matcher'
 
 const c = Phaser.Input.Keyboard.KeyCodes
 
-const keymap = {
+const keymapArrows = {
   [c.DOWN]:  'down',
   [c.UP]:    'up',
   [c.RIGHT]: 'right',
   [c.LEFT]:  'left',
-  [c.A]:     'punch:light',
-  [c.O]:     'punch:hard',
-  [c.E]:     'kick:light',
-  [c.U]:     'kick:hard',
+}
+const keymapDvorak = {
+  [c.A]: 'punch:light',
+  [c.O]: 'punch:hard',
+  [c.E]: 'kick:light',
+  [c.U]: 'kick:hard',
+  [c.I]: 'guard',
+}
+
+const keymapQwerty = {
+  [c.A]: 'punch:light',
+  [c.S]: 'punch:hard',
+  [c.D]: 'kick:light',
+  [c.F]: 'kick:hard',
+  [c.G]: 'guard',
 }
 
 class Scene1 extends Phaser.Scene {
@@ -34,11 +46,10 @@ class Scene1 extends Phaser.Scene {
       {
         bufferLimitType: 'time',
         bufferLimit: 500,
-        keymapFn: Mapper.NewSimpleMapper(keymap),
+        keymapFn: Mapper.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak }),
         coalesseFn: Coalesse.Coalesse,
-        filters: filterChain(
-          Coalesse.NewFacingFilter(() => this.facing)
-        )
+        filters: Coalesse.NewFacingFilter(() => this.facing),
+        matchFn: Match.NewMatcher(Match.simpleMoveList),
       },
     )
   }
@@ -48,7 +59,6 @@ class Scene1 extends Phaser.Scene {
     const ls = this.hadoken.lastState()
     if (ls && ls !== this.ls) {
       this.ls = ls
-      console.log(Object.keys(ls.state))
     }
   }
 }

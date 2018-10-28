@@ -2,8 +2,7 @@ import { SemanticInput } from "./Hadoken";
 
 export type InputData = {
   pressed: number,
-  // TODO: possibly make InputData generic to type meta
-  meta: any,
+  frameAdded: boolean,
 }
 
 export type InputState = {
@@ -29,7 +28,11 @@ export function HasKey(s: InputSnapshot, key: SemanticInput): boolean {
   return !!s.state[key]
 }
 
-export function ReplaceKey(s: InputSnapshot, oldKey: SemanticInput, newKey: SemanticInput): InputSnapshot {
+export function ReplaceKey(
+  s: InputSnapshot,
+  oldKey: SemanticInput,
+  newKey: SemanticInput,
+): InputSnapshot {
   const output = { timestamp: s.timestamp, state: { ...s.state } }
   if (!s.state[oldKey]) {
     return output

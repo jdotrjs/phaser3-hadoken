@@ -1,13 +1,9 @@
-import {
-  InputSnapshot,
-  NewInputSnapshot,
-  HasSameKeys,
-} from './InputSnapshot'
+import { InputSnapshot, NewInputSnapshot } from './InputSnapshot'
 
 export type SemanticInput = string
 export type CoalesseFn = (input: InputSnapshot, timestamp: number) => InputSnapshot
 export type FilterFn = (input: InputSnapshot) => InputSnapshot
-export type MatchFn = (history: [InputSnapshot]) => void
+export type MatchFn = (history: InputSnapshot[]) => void
 
 export type HadokenPipelineConfig = {
   bufferLimitType: 'depth' | 'time',
