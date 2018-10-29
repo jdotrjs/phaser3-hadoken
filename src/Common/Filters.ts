@@ -12,7 +12,7 @@ export const DPAD_COMBINATIONS: CoalesseMapping = {
   'up+right':   ['up',   'right'],
 }
 
-export function Coalesse(input: InputSnapshot, timestamp: number): InputSnapshot {
+export function CoalesseDirections(input: InputSnapshot): InputSnapshot {
   const hasAll = (set: string[]): boolean => set.every(k => !!output[k])
 
   const output = { ...input.state }
@@ -33,7 +33,7 @@ export function Coalesse(input: InputSnapshot, timestamp: number): InputSnapshot
   return { timestamp: input.timestamp, state: output }
 }
 
-export function NewFacingFilter(getFacing: () => 'right' | 'left'): FilterFn {
+export function AsFacing(getFacing: () => 'right' | 'left'): FilterFn {
   return function (input: InputSnapshot): InputSnapshot {
     const facing = getFacing()
     let output = { ...input, state: { ...input.state } }

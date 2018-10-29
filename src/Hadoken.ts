@@ -3,14 +3,18 @@ import { InputSnapshot, NewInputSnapshot } from './InputSnapshot'
 export type SemanticInput = string
 export type CoalesseFn = (input: InputSnapshot, timestamp: number) => InputSnapshot
 export type FilterFn = (input: InputSnapshot) => InputSnapshot
-export type MatchFn = (history: InputSnapshot[]) => void
+export type MatchFn = (history: InputSnapshot[]) => boolean
+export type MoveList = {
+  name: string,
+  match: MatchFn
+}
 
 export type HadokenPipelineConfig = {
   bufferLimitType: 'depth' | 'time',
   bufferLimit: number,
   coalesseFn?: CoalesseFn,
   filters?: FilterFn,
-  matchFn?: MatchFn,
+  matchers?: MoveList[],
 }
 
 export function filterChain(...filters: FilterFn[]): FilterFn {

@@ -3,7 +3,7 @@ import { InputSnapshot } from 'ph/InputSnapshot'
 // TODO: index should resolve automatically...
 import { HadokenKeyboard } from 'ph/Keyboard/index'
 import * as Mapper from 'ph/Keyboard/Mapper'
-import * as Coalesse from "ph/Common/Coalesse"
+import * as Filters from "ph/Common/Filters"
 import * as Match from 'ph/Common/Matcher'
 
 const c = Phaser.Input.Keyboard.KeyCodes
@@ -47,9 +47,11 @@ class Scene1 extends Phaser.Scene {
         bufferLimitType: 'time',
         bufferLimit: 500,
         keymapFn: Mapper.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak }),
-        coalesseFn: Coalesse.Coalesse,
-        filters: Coalesse.NewFacingFilter(() => this.facing),
-        matchFn: Match.NewMatcher(Match.simpleMoveList),
+        filters: filterChain(
+          Filters.CoalesseDirections,
+          Filters.AsFacing(() => this.facing),
+        ),
+        matchers: [], // Match.NewMatcher(Match.simpleMoveList),
       },
     )
   }

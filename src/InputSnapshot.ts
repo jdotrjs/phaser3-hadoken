@@ -2,7 +2,6 @@ import { SemanticInput } from "./Hadoken";
 
 export type InputData = {
   pressed: number,
-  frameAdded: boolean,
 }
 
 export type InputState = {
