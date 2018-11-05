@@ -1,4 +1,5 @@
-import difference from 'lodash/difference'
+// TODO: using lodash increases build size by ~70k
+import { difference } from 'lodash'
 
 import { InputSnapshot, InputState, HasKey } from 'ph/InputSnapshot'
 import { MatchFn, SemanticInput } from 'ph/Hadoken'
