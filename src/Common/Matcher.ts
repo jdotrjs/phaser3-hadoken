@@ -1,3 +1,5 @@
+import difference from 'lodash/difference'
+
 import { InputSnapshot, InputState, HasKey } from 'ph/InputSnapshot'
 import { MatchFn, SemanticInput } from 'ph/Hadoken'
 
@@ -6,7 +8,7 @@ type MatchPredicate = (input: InputState) => boolean
 type MoveDef = {
   name: string,
   inputToleranceMS?: number,
-  moveMatcher: (inputSeq: InputSnapshot[]) => boolean,
+  moveMatcher: MatchFn,
 }
 
 // Priority ordered series of move definitions
@@ -40,115 +42,123 @@ function multiKey(...matchers: (SemanticInput | MatchPredicate)[]): MatchPredica
     )
 }
 
-const QFC = ['down', 'down+forward', 'forward']
-const QBC = ['down', 'down+backward', 'backward']
-const SS = [
-  'down+forward',
-  'up+back',
-  'forward',
-  'down',
-  'down+forward',
-  'down+back',
-  multiKey(
-    oneClass('punch'),
-    noClass('kick'),
-    'guard',
-  ),
-]
-
-export function NewSimple(sequence: SemanticInput[]): MatchFn {
-  return function (history: InputSnapshot[]): boolean {
-    return false
+function hasOneClass(
+  ss: InputSnapshot,
+  keyClass: string,
+): SemanticInput | null {
+  const prospective = Object.keys(ss.state).filter(k => k.indexOf(keyClass) === 0)
+  if (prospective.length !== 1) {
+    return null
   }
+  return prospective[0]
 }
 
-// export function NoopMatch(): void {}
+const simpleSubsetMatchOptionsDefault = {
+  stepDelay: 250,
+  totalDelay: 3000,
+}
 
-// export const simpleMoveList: MoveList = [
-//   {
-//     name: 'summon_suffering',
-//     inputToleranceMS: 16 * 50,
-//     sequence: SS,
-//   },
-//   {
-//     name: 'hadoken',
-//     sequence: [...QFC, oneClass('punch')],
-//   },
-//   {
-//     name: 'huricane_kick',
-//     sequence: [...QBC, oneClass('kick')],
-//   },
-// ]
+function newInputs(oldSS: InputSnapshot, newSS: InputSnapshot): SemanticInput[] {
+  const oldKeys = Object.keys(oldSS.state)
+  const newKeys = Object.keys(newSS.state)
+  return difference(newKeys, oldKeys)
+}
 
-// function matchInput(state: InputState, matcher: SemanticInput | MatchPredicate): boolean {
-//   if (typeof matcher === 'string') {
-//     return !!state[matcher] && Object.keys(state).length === 1
-//   }
-//   return matcher(state)
-// }
+function remInputs(oldSS: InputSnapshot, newSS: InputSnapshot): SemanticInput[] {
+  const oldKeys = Object.keys(oldSS.state)
+  const newKeys = Object.keys(newSS.state)
+  return difference(oldKeys, newKeys)
+}
 
-// export function NewMatcher(moves: MoveList, defaultToleranceMS: number = 2): MatchFn {
-//   const moveList = moves.reduce(
-//     (acc: MoveList, cur: MoveDef) => {
-//       const sequence = [...cur.sequence]
-//       sequence.reverse()
-//       return [
-//         ...acc,
-//         { name: cur.name, sequence },
-//       ]
-//     },
-//     [],
-//   )
+/**
+ * Checks if a sequence exists within some historic snapshot.
+ *
+ * @param history An array of input states ordered oldest-to-newest
+ * @param sequence An array of inputs that composes a move sequence; ordered last to first
+ * @returns indexes of the sequence match if one is found, null otherwise
+ */
+function simpleSubsetMatch(
+  history: InputSnapshot[],
+  sequence: SemanticInput[],
+  options: {
+    stepDelay: number,
+    totalDelay: number,
+  } = simpleSubsetMatchOptionsDefault,
+): number[] | null {
+  const { stepDelay, totalDelay } = options
+  if (!history || !history.length || !sequence || !sequence.length) {
+    return null
+  }
 
-//   return function(input: InputSnapshot[]): void {
-//     console.log(input)
-//     const lastInput = input.slice(-1)[0]
-//     const matchedMove = moveList.reduce((matched, tgtMove) => {
-//       if (matched !== '') {
-//         return matched
-//       }
+  let historyIdx = history.length - 1
+  let lastLocation: InputSnapshot = {state: {}, timestamp: 0}
+  let curLoaction = history[historyIdx]
+  let wantMv = sequence[0]
 
-//       const tolerance = tgtMove.inputToleranceMS || defaultToleranceMS
-//       const { sequence } = tgtMove
-//       let lastMatch = 0
+  const mvIndices = []
 
-//       // Check to see if we're at the end of this move; if not then it's not worth checking anything else
-//       if (!matchInput(lastInput.state, sequence[0], true)) {
-//         return ''
-//       } else {
-//         lastMatch = lastInput.timestamp
-//         if (input.length === 1) {
-//           return tgtMove.name
-//         }
-//       }
+  // check to see if the most recent frame finishes the move sequence
+  if (newInputs(lastLocation, curLoaction).indexOf(wantMv) === -1) {
+    // if not then this slice of history can't be an input match
+    return null
+  }
+  mvIndices.push(historyIdx)
 
-//       let i = 1
-//       let j = input.length - 2
-//       for (; i < sequence.length; i++) {
-//         for (; j >= 0; j--) {
-//           if (matchInput(input[j].state, sequence[i], false)) {
-//             const newMatchTS = input[j].timestamp
-//             if (lastMatch - newMatchTS <= tolerance) {
-//               lastMatch = newMatchTS
-//             }
-//           }
-//         }
-//       }
+  const lastInputTS = curLoaction.state[wantMv].pressed
 
-//       if (i === sequence.length) {
-//         return tgtMove.name
-//       }
+  let curMv = 1
+  let prevMvTS = lastInputTS
 
-//       return ''
-//     }, '')
+  for (; curMv < sequence.length; curMv++) {
+    wantMv = sequence[curMv]
+    for (; historyIdx >= 0; historyIdx--) {
+      lastLocation = curLoaction
+      curLoaction = history[historyIdx]
+      const newKeys = newInputs(lastLocation, curLoaction)
 
-//     if (matchedMove !== '') {
-//       const str: string[] = []
-//       input.forEach(i => {
-//         str.push(Object.keys(i.state).join(', '))
-//       })
-//       console.log(str.join(' / '))
-//       console.log(`${Date.now()} - matched ${matchedMove}`)
-//     }
-//   }
-// }
+      if (newKeys.indexOf(wantMv) !== -1) {
+        const { pressed } = curLoaction.state[wantMv]
+        const brokeStep = prevMvTS - pressed > stepDelay
+        const brokeTotal = lastInputTS - pressed > totalDelay
+        if (brokeStep || brokeTotal) {
+          return null
+        }
+        prevMvTS = pressed
+        mvIndices.push(historyIdx)
+        break
+      }
+    }
+  }
+
+  return mvIndices.length === sequence.length
+    ? mvIndices
+    : null
+}
+
+export function NewSimple(
+  sequence: SemanticInput[],
+  options: {
+    stepDelay: number,
+    totalDelay: number,
+  } = simpleSubsetMatchOptionsDefault,
+): MatchFn {
+  if (sequence.length === 0) {
+    return () => false
+  }
+
+  const seq = [...sequence]
+  seq.reverse()
+
+  return function (history: InputSnapshot[]): boolean {
+    const mvIndicies = simpleSubsetMatch(history, seq, options)
+    if (mvIndicies !== null) {
+      for (let i = mvIndicies.slice(-1)[0]; i < history.length; i++) {
+        if (null !== simpleSubsetMatch(history.slice(0, i), seq, options)) {
+          return false
+        }
+      }
+    }
+
+    return !!mvIndicies
+  }
+}

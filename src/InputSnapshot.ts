@@ -59,6 +59,21 @@ export function HasSameKeys(
   )
 }
 
+export function NewestTimestamp(ss: InputSnapshot): number {
+  return Object.keys(ss.state).reduce((ts, key) => {
+    if (ts > ss.state[key].pressed) {
+      return ts
+    } else {
+      return ss.state[key].pressed
+    }
+  }, 0)
+}
+
+export function AddedInFrame(ss: InputSnapshot, key: SemanticInput): boolean {
+  const { pressed } = ss.state[key] || 0
+  return NewestTimestamp(ss) === pressed
+}
+
 export function NewInputSnapshot(): InputSnapshot {
   return {
     timestamp: Date.now(),

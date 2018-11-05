@@ -30,6 +30,18 @@ const keymapQwerty = {
   [c.G]: 'guard',
 }
 
+const QFC = ['down', 'down+forward', 'forward']
+const QBC = ['down', 'down+backward', 'backward']
+const SS = [
+  'down+forward',
+  'up+backward',
+  'forward',
+  'down',
+  'down+forward',
+  'down+backward',
+]
+
+
 class Scene1 extends Phaser.Scene {
   hadoken: HadokenKeyboard
   facing: 'right' | 'left'
@@ -51,7 +63,23 @@ class Scene1 extends Phaser.Scene {
           Filters.CoalesseDirections,
           Filters.AsFacing(() => this.facing),
         ),
-        matchers: [], // Match.NewMatcher(Match.simpleMoveList),
+        matchers: [
+          {
+            name: 'hadoken',
+            match: Match.NewSimple([...QFC, 'punch:light']),
+          },
+          {
+            name: 'huricane_kick',
+            match: Match.NewSimple([...QBC, 'kick:light']),
+          },
+          {
+            name: 'summon_suffering',
+            match: Match.NewSimple(
+              [...SS, 'punch:light', 'guard'],
+              { stepDelay: 800, totalDelay: 6000 },
+            ),
+          }
+        ],
       },
     )
   }

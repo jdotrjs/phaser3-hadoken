@@ -1,3 +1,5 @@
+import difference from 'lodash/difference'
+
 import {
   Hadoken,
   HadokenPipelineConfig,
