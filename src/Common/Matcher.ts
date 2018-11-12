@@ -1,7 +1,4 @@
-// TODO: using lodash increases build size by ~70k
-import { difference } from 'lodash'
-
-import { InputSnapshot, InputState, HasKey } from 'ph/InputSnapshot'
+import { InputSnapshot, InputState, NewInputs } from 'ph/InputSnapshot'
 import { MatchFn, SemanticInput } from 'ph/Hadoken'
 
 type MatchPredicate = (input: InputState) => boolean
@@ -17,14 +14,14 @@ type MoveList = MoveDef[]
 
 // Looks for _one_ pressed button of a given class
 function oneClass(n: string): MatchPredicate {
-  return function(input: InputState): boolean {
+  return function (input: InputState): boolean {
     return Object.keys(input).filter(i => i.indexOf(n) === 0).length === 1
   }
 }
 
 // Verifies that none of the represented classes are present
 function noClass(n: string): MatchPredicate {
-  return function(input: InputState): boolean {
+  return function (input: InputState): boolean {
     return Object.keys(input).filter(i => i.indexOf(n) === 0).length === 0
   }
 }
@@ -59,16 +56,26 @@ const simpleSubsetMatchOptionsDefault = {
   totalDelay: 3000,
 }
 
-function newInputs(oldSS: InputSnapshot, newSS: InputSnapshot): SemanticInput[] {
-  const oldKeys = Object.keys(oldSS.state)
-  const newKeys = Object.keys(newSS.state)
-  return difference(newKeys, oldKeys)
+type InputPredicate = (key: SemanticInput) => bool
+type InputCheck = SemanticInput | InputPredicate
+
+function check(ck: InputCheck, key: SemanticInput): bool {
+  return typeof ck === 'string'
+    ? ck === key
+    : ck(key)
 }
 
-function remInputs(oldSS: InputSnapshot, newSS: InputSnapshot): SemanticInput[] {
-  const oldKeys = Object.keys(oldSS.state)
-  const newKeys = Object.keys(newSS.state)
-  return difference(oldKeys, newKeys)
+function findIndex(input: string[], ck: InputCheck): number {
+  for (let i = 0; i < input.length; i++) {
+    if (check(ck, input[i])) {
+      return i
+    }
+  }
+  return -1
+}
+
+export function NKeys(input: SemanticInput[]): InputPredicate {
+  return function()
 }
 
 /**
@@ -80,7 +87,7 @@ function remInputs(oldSS: InputSnapshot, newSS: InputSnapshot): SemanticInput[] 
  */
 function simpleSubsetMatch(
   history: InputSnapshot[],
-  sequence: SemanticInput[],
+  sequence: InputCheck[],
   options: {
     stepDelay: number,
     totalDelay: number,
@@ -92,20 +99,22 @@ function simpleSubsetMatch(
   }
 
   let historyIdx = history.length - 1
-  let lastLocation: InputSnapshot = {state: {}, timestamp: 0}
+  let lastLocation: InputSnapshot = { state: {}, timestamp: 0 }
   let curLoaction = history[historyIdx]
   let wantMv = sequence[0]
 
   const mvIndices = []
 
+  const newInputs = NewInputs(lastLocation, curLoaction)
+  const newInputKeyIdx = findIndex(newInputs, wantMv)
   // check to see if the most recent frame finishes the move sequence
-  if (newInputs(lastLocation, curLoaction).indexOf(wantMv) === -1) {
+  if (newInputKeyIdx === -1) {
     // if not then this slice of history can't be an input match
     return null
   }
   mvIndices.push(historyIdx)
 
-  const lastInputTS = curLoaction.state[wantMv].pressed
+  const lastInputTS = curLoaction.state[newInputs[newInputKeyIdx]].pressed
 
   let curMv = 1
   let prevMvTS = lastInputTS
@@ -115,10 +124,11 @@ function simpleSubsetMatch(
     for (; historyIdx >= 0; historyIdx--) {
       lastLocation = curLoaction
       curLoaction = history[historyIdx]
-      const newKeys = newInputs(lastLocation, curLoaction)
+      const newKeys = NewInputs(lastLocation, curLoaction)
+      const hitIdx = findIndex(newKeys, wantMv)
 
-      if (newKeys.indexOf(wantMv) !== -1) {
-        const { pressed } = curLoaction.state[wantMv]
+      if (hitIdx !== -1) {
+        const { pressed } = curLoaction.state[newKeys[hitIdx]]
         const brokeStep = prevMvTS - pressed > stepDelay
         const brokeTotal = lastInputTS - pressed > totalDelay
         if (brokeStep || brokeTotal) {
@@ -137,29 +147,29 @@ function simpleSubsetMatch(
 }
 
 export function NewSimple(
-  sequence: SemanticInput[],
+  sequence: InputCheck[],
   options: {
     stepDelay: number,
     totalDelay: number,
   } = simpleSubsetMatchOptionsDefault,
 ): MatchFn {
   if (sequence.length === 0) {
-    return () => false
+    return () => [false, null]
   }
 
   const seq = [...sequence]
   seq.reverse()
 
-  return function (history: InputSnapshot[]): boolean {
+  return function (history: InputSnapshot[]): [boolean, object | null] {
     const mvIndicies = simpleSubsetMatch(history, seq, options)
     if (mvIndicies !== null) {
       for (let i = mvIndicies.slice(-1)[0]; i < history.length; i++) {
         if (null !== simpleSubsetMatch(history.slice(0, i), seq, options)) {
-          return false
+          return [false, null]
         }
       }
     }
 
-    return !!mvIndicies
+    return [!!mvIndicies, null]
   }
 }

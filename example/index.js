@@ -7,7 +7,7 @@ let phaserConfig = {
   scene: [ Scene1 ],
   input: {
     gamepad: true,
-  }
+  },
 }
 
 new Phaser.Game(phaserConfig)

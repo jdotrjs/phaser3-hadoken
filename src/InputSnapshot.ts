@@ -1,3 +1,6 @@
+// TODO: using lodash increases build size by ~70k
+import { difference } from 'lodash'
+
 import { SemanticInput } from "./Hadoken";
 
 export type InputData = {
@@ -79,4 +82,16 @@ export function NewInputSnapshot(): InputSnapshot {
     timestamp: Date.now(),
     state: {},
   }
+}
+
+export function NewInputs(oldSS: InputSnapshot, newSS: InputSnapshot): SemanticInput[] {
+  const oldKeys = Object.keys(oldSS.state)
+  const newKeys = Object.keys(newSS.state)
+  return difference(newKeys, oldKeys)
+}
+
+export function RemovedInputs(oldSS: InputSnapshot, newSS: InputSnapshot): SemanticInput[] {
+  const oldKeys = Object.keys(oldSS.state)
+  const newKeys = Object.keys(newSS.state)
+  return difference(oldKeys, newKeys)
 }

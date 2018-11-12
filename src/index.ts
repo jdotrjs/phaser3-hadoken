@@ -1,5 +1,4 @@
-import { filterChain } from 'ph/Hadoken'
-import { InputSnapshot } from 'ph/InputSnapshot'
+import { filterChain, Events, InputUpdateData, MatchData } from 'ph/Hadoken'
 // TODO: index should resolve automatically...
 import { HadokenKeyboard } from 'ph/Keyboard/index'
 import * as Mapper from 'ph/Keyboard/Mapper'
@@ -21,7 +20,6 @@ const keymapDvorak = {
   [c.U]: 'kick:hard',
   [c.I]: 'guard',
 }
-
 const keymapQwerty = {
   [c.A]: 'punch:light',
   [c.S]: 'punch:hard',
@@ -49,7 +47,6 @@ class Scene1 extends Phaser.Scene {
   constructor() {
     super('scene1')
     this.facing = 'right'
-    console.log(this)
   }
 
   create() {
@@ -82,14 +79,14 @@ class Scene1 extends Phaser.Scene {
         ],
       },
     )
-  }
 
-  ls: InputSnapshot | null
-  update() {
-    const ls = this.hadoken.lastState()
-    if (ls && ls !== this.ls) {
-      this.ls = ls
-    }
+    this.hadoken.emitter.on(Events.InputUpdate, (data: InputUpdateData) => {
+      console.log(data.add)
+    })
+
+    this.hadoken.emitter.on(Events.Match, (data: MatchData) => {
+      console.log(`matched: ${data.name}`)
+    })
   }
 }
 
