@@ -56,6 +56,7 @@ const simpleSubsetMatchOptionsDefault = {
   totalDelay: 3000,
 }
 
+// TODO: lol, this should be checking a full snapshot, not a single input
 type InputPredicate = (key: SemanticInput) => bool
 type InputCheck = SemanticInput | InputPredicate
 
@@ -75,7 +76,7 @@ function findIndex(input: string[], ck: InputCheck): number {
 }
 
 export function NKeys(input: SemanticInput[]): InputPredicate {
-  return function()
+  return function() { return false }
 }
 
 /**
