@@ -39,13 +39,6 @@ export const Events = {
   Match: 'match',
 }
 
-export function filterChain(...filters: FilterFn[]): FilterFn {
-  return (input: InputSnapshot) => filters.reduce(
-    (acc, nextFn) => nextFn(acc),
-    input,
-  )
-}
-
 export type Hadoken<T extends HadokenPipelineConfig> = {
   scene: Phaser.Scene,
   config: T,

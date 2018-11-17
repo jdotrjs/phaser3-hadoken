@@ -57,18 +57,24 @@ const simpleSubsetMatchOptionsDefault = {
 }
 
 // TODO: lol, this should be checking a full snapshot, not a single input
-type InputPredicate = (key: SemanticInput) => bool
+type InputPredicate = (history: InputSnapshot[], curIdx: number) => boolean
 type InputCheck = SemanticInput | InputPredicate
 
-function check(ck: InputCheck, key: SemanticInput): bool {
-  return typeof ck === 'string'
-    ? ck === key
-    : ck(key)
+function check(ck: InputCheck, history: InputSnapshot[], curIdx: number): boolean {
+  if (typeof ck === 'string') {
+    const isLast = curIdx == 0
+    const prev = isLast ? { timestamp: 0, state: {} } : history[curIdx - 1]
+    const cur = history[curIdx]
+    const keys = NewInputs(prev, cur)
+    const ckIdx = findIndex(keys, ck)
+    return ckIdx !== -1
+  }
+  return ck(history, curIdx)
 }
 
-function findIndex(input: string[], ck: InputCheck): number {
+function findIndex(input: string[], ck: string): number {
   for (let i = 0; i < input.length; i++) {
-    if (check(ck, input[i])) {
+    if (input[i] == ck) {
       return i
     }
   }
@@ -99,52 +105,42 @@ function simpleSubsetMatch(
     return null
   }
 
+  let ck = sequence[0]
   let historyIdx = history.length - 1
-  let lastLocation: InputSnapshot = { state: {}, timestamp: 0 }
-  let curLoaction = history[historyIdx]
-  let wantMv = sequence[0]
 
-  const mvIndices = []
+  const lastInputTS = history[historyIdx].timestamp
+  let prevInputTS = lastInputTS
 
-  const newInputs = NewInputs(lastLocation, curLoaction)
-  const newInputKeyIdx = findIndex(newInputs, wantMv)
-  // check to see if the most recent frame finishes the move sequence
-  if (newInputKeyIdx === -1) {
-    // if not then this slice of history can't be an input match
+  const results = []
+  if (!check(ck, history, historyIdx)) {
     return null
   }
-  mvIndices.push(historyIdx)
+  results.push(historyIdx)
+  historyIdx--
 
-  const lastInputTS = curLoaction.state[newInputs[newInputKeyIdx]].pressed
+  let inTime = true
 
-  let curMv = 1
-  let prevMvTS = lastInputTS
-
-  for (; curMv < sequence.length; curMv++) {
-    wantMv = sequence[curMv]
+  for (let i = 1; inTime && i < sequence.length; i++) {
+    ck = sequence[i]
     for (; historyIdx >= 0; historyIdx--) {
-      lastLocation = curLoaction
-      curLoaction = history[historyIdx]
-      const newKeys = NewInputs(lastLocation, curLoaction)
-      const hitIdx = findIndex(newKeys, wantMv)
+      const thisInputTS = history[historyIdx].timestamp
+      const brokeFullInput = lastInputTS - thisInputTS > totalDelay
+      const brokeStepInput = prevInputTS - thisInputTS > stepDelay
+      inTime = !(brokeFullInput || brokeStepInput)
 
-      if (hitIdx !== -1) {
-        const { pressed } = curLoaction.state[newKeys[hitIdx]]
-        const brokeStep = prevMvTS - pressed > stepDelay
-        const brokeTotal = lastInputTS - pressed > totalDelay
-        if (brokeStep || brokeTotal) {
-          return null
-        }
-        prevMvTS = pressed
-        mvIndices.push(historyIdx)
+      if (!inTime) {
+        break
+      }
+
+      if (check(ck, history, historyIdx)) {
+        results.push(historyIdx)
+        prevInputTS = thisInputTS
         break
       }
     }
   }
 
-  return mvIndices.length === sequence.length
-    ? mvIndices
-    : null
+  return results.length == sequence.length ? results : null
 }
 
 export function NewSimple(

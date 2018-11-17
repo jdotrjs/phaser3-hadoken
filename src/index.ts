@@ -1,4 +1,4 @@
-import { filterChain, Events, InputUpdateData, MatchData } from 'ph/Hadoken'
+import { Events, InputUpdateData, MatchData } from 'ph/Hadoken'
 // TODO: index should resolve automatically...
 import { HadokenKeyboard } from 'ph/Keyboard/index'
 import * as Mapper from 'ph/Keyboard/Mapper'
@@ -13,6 +13,14 @@ const keymapArrows = {
   [c.RIGHT]: 'right',
   [c.LEFT]:  'left',
 }
+
+const DPAD_COMBINATIONS: Filters.CoalesseMapping = {
+  'down+left':  ['down', 'left' ],
+  'down+right': ['down', 'right'],
+  'up+left':    ['up',   'left' ],
+  'up+right':   ['up',   'right'],
+}
+
 const keymapDvorak = {
   [c.A]: 'punch:light',
   [c.O]: 'punch:hard',
@@ -28,6 +36,16 @@ const keymapQwerty = {
   [c.G]: 'guard',
 }
 
+const DIRECTIONS = [
+  'up',
+  'up+forward',
+  'forward',
+  'down+forward',
+  'down',
+  'down+backward',
+  'backward',
+  'up+backward',
+]
 const QFC = ['down', 'down+forward', 'forward']
 const QBC = ['down', 'down+backward', 'backward']
 const SS = [
@@ -38,6 +56,8 @@ const SS = [
   'down+forward',
   'down+backward',
 ]
+const PUNCHES = ['punch:light', 'punch:hard']
+const KICKS = ['kick:light', 'kick:hard']
 
 
 class Scene1 extends Phaser.Scene {
@@ -56,9 +76,12 @@ class Scene1 extends Phaser.Scene {
         bufferLimitType: 'time',
         bufferLimit: 500,
         keymapFn: Mapper.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak }),
-        filters: filterChain(
-          Filters.CoalesseDirections,
-          Filters.AsFacing(() => this.facing),
+        filters: Filters.NewChain(
+          Filters.CoalesseInputs(DPAD_COMBINATIONS),
+          Filters.MapToFacing(() => this.facing),
+          Filters.OnlyMostRecent(DIRECTIONS),
+          Filters.OnlyMostRecent(PUNCHES),
+          Filters.OnlyMostRecent(KICKS),
         ),
         matchers: [
           {
@@ -81,7 +104,7 @@ class Scene1 extends Phaser.Scene {
     )
 
     this.hadoken.emitter.on(Events.InputUpdate, (data: InputUpdateData) => {
-      console.log(data.add)
+      // console.log(data.add)
     })
 
     this.hadoken.emitter.on(Events.Match, (data: MatchData) => {
