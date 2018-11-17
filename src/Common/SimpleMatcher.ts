@@ -1,60 +1,5 @@
-import { InputSnapshot, InputState, NewInputs } from 'ph/InputSnapshot'
+import { InputSnapshot, NewInputs } from 'ph/InputSnapshot'
 import { MatchFn, SemanticInput } from 'ph/Hadoken'
-
-type MatchPredicate = (input: InputState) => boolean
-
-type MoveDef = {
-  name: string,
-  inputToleranceMS?: number,
-  moveMatcher: MatchFn,
-}
-
-// Priority ordered series of move definitions
-type MoveList = MoveDef[]
-
-// Looks for _one_ pressed button of a given class
-function oneClass(n: string): MatchPredicate {
-  return function (input: InputState): boolean {
-    return Object.keys(input).filter(i => i.indexOf(n) === 0).length === 1
-  }
-}
-
-// Verifies that none of the represented classes are present
-function noClass(n: string): MatchPredicate {
-  return function (input: InputState): boolean {
-    return Object.keys(input).filter(i => i.indexOf(n) === 0).length === 0
-  }
-}
-
-function multiKey(...matchers: (SemanticInput | MatchPredicate)[]): MatchPredicate {
-  return (input: InputState): boolean =>
-    matchers.reduce(
-      (acc, cur) => {
-        if (typeof cur === 'string') {
-          return acc && !!input[cur]
-        }
-
-        return acc && cur(input)
-      },
-      true,
-    )
-}
-
-function hasOneClass(
-  ss: InputSnapshot,
-  keyClass: string,
-): SemanticInput | null {
-  const prospective = Object.keys(ss.state).filter(k => k.indexOf(keyClass) === 0)
-  if (prospective.length !== 1) {
-    return null
-  }
-  return prospective[0]
-}
-
-const simpleSubsetMatchOptionsDefault = {
-  stepDelay: 250,
-  totalDelay: 3000,
-}
 
 // TODO: lol, this should be checking a full snapshot, not a single input
 type InputPredicate = (history: InputSnapshot[], curIdx: number) => boolean
@@ -81,8 +26,9 @@ function findIndex(input: string[], ck: string): number {
   return -1
 }
 
-export function NKeys(input: SemanticInput[]): InputPredicate {
-  return function() { return false }
+const simpleSubsetMatchOptionsDefault = {
+  stepDelay: 250,
+  totalDelay: 3000,
 }
 
 /**
@@ -143,7 +89,23 @@ function simpleSubsetMatch(
   return results.length == sequence.length ? results : null
 }
 
-export function NewSimple(
+/**
+ * Constructs a simple subset matcher for a given sequence. The maximum amount
+ * of delay betwen each input and for the entire sequence. These delay values
+ * are specified in the options parameter and are specified as a number of
+ * milliseconds. If no input is provided the defaults are:
+ *   stepDelay: 250ms
+ *   totalyDelay: 3000ms
+ *
+ * The actual match just looks for the sequence of inputs in the correct order
+ * regardless of any intervening input states. This means you can match a move
+ * sequence of "a, a, b" with input states of "a, c, a, b."
+ *
+ * A sequence step can be either a string, in which case we will look for an
+ * input state that contains that input, or an InputPredicate. See type docs
+ * on how that is used.
+ */
+export function New(
   sequence: InputCheck[],
   options: {
     stepDelay: number,

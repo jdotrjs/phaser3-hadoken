@@ -1,31 +1,26 @@
-// TODO: using lodash increases build size by ~70k
+// TODO: rewrite for reduced dist size
 import { difference } from 'lodash'
 
-import { SemanticInput } from "./Hadoken";
+import { SemanticInput } from "./Hadoken"
 
 export type InputData = {
   pressed: number,
 }
 
+// Maps input by name to tracked data about it
 export type InputState = {
   [name: string]: InputData,
 }
 
+// Represents a single point at time and the state of any input
 export type InputSnapshot = {
   timestamp: number,
   state: InputState,
 }
 
-export function sameKeys(s1: InputState, s2: InputState): boolean {
-  const nkeys = Object.keys(s1)
-  const okeys = Object.keys(s2)
-
-  return !(
-    nkeys.length !== okeys.length ||
-    nkeys.some(k => okeys.indexOf(k) === -1)
-  )
-}
-
+/**
+ * Returns true if a snapshot has a given key pressed
+ */
 export function HasKey(s: InputSnapshot, key: SemanticInput): boolean {
   return !!s.state[key]
 }
@@ -70,11 +65,6 @@ export function NewestTimestamp(ss: InputSnapshot): number {
       return ss.state[key].pressed
     }
   }, 0)
-}
-
-export function AddedInFrame(ss: InputSnapshot, key: SemanticInput): boolean {
-  const { pressed } = ss.state[key] || 0
-  return NewestTimestamp(ss) === pressed
 }
 
 export function NewInputSnapshot(): InputSnapshot {

@@ -1,9 +1,8 @@
 import { Events, InputUpdateData, MatchData } from 'ph/Hadoken'
 // TODO: index should resolve automatically...
-import { HadokenKeyboard } from 'ph/Keyboard/index'
-import * as Mapper from 'ph/Keyboard/Mapper'
+import * as Keyboard from 'ph/Keyboard/index'
 import * as Filters from "ph/Common/Filters"
-import * as Match from 'ph/Common/Matcher'
+import * as SimpleMatcher from 'ph/Common/SimpleMatcher'
 
 const c = Phaser.Input.Keyboard.KeyCodes
 
@@ -61,7 +60,7 @@ const KICKS = ['kick:light', 'kick:hard']
 
 
 class Scene1 extends Phaser.Scene {
-  hadoken: HadokenKeyboard
+  hadoken: Keyboard.KeyboardHadoken
   facing: 'right' | 'left'
 
   constructor() {
@@ -70,31 +69,30 @@ class Scene1 extends Phaser.Scene {
   }
 
   create() {
-    this.hadoken = new HadokenKeyboard(
+    this.hadoken = new Keyboard.KeyboardHadoken(
       this,
       {
         bufferLimitType: 'time',
-        bufferLimit: 500,
-        keymapFn: Mapper.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak }),
+        bufferLimit: 5000,
+        keymapFn: Keyboard.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak }),
         filters: Filters.NewChain(
           Filters.CoalesseInputs(DPAD_COMBINATIONS),
           Filters.MapToFacing(() => this.facing),
           Filters.OnlyMostRecent(DIRECTIONS),
-          Filters.OnlyMostRecent(PUNCHES),
-          Filters.OnlyMostRecent(KICKS),
+          Filters.OnlyMostRecent([...PUNCHES, ...KICKS]),
         ),
         matchers: [
           {
             name: 'hadoken',
-            match: Match.NewSimple([...QFC, 'punch:light']),
+            match: SimpleMatcher.New([...QFC, 'punch:light']),
           },
           {
             name: 'huricane_kick',
-            match: Match.NewSimple([...QBC, 'kick:light']),
+            match: SimpleMatcher.New([...QBC, 'kick:light']),
           },
           {
             name: 'summon_suffering',
-            match: Match.NewSimple(
+            match: SimpleMatcher.New(
               [...SS, 'punch:light', 'guard'],
               { stepDelay: 800, totalDelay: 6000 },
             ),

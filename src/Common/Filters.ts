@@ -1,5 +1,7 @@
-import { SemanticInput, FilterFn } from "ph/Hadoken";
+import { SemanticInput } from "ph/Hadoken"
 import { InputSnapshot, ReplaceKey } from "ph/InputSnapshot"
+
+export type FilterFn = (input: InputSnapshot) => InputSnapshot
 
 /**
  * Takes a series of filters that should be applied to an input snapshot and

@@ -3,11 +3,19 @@
   HadokenPipelineConfig,
   NewHadoken,
   SemanticInput,
-  maybeAddKey,
-  maybeRemoveKey,
+  MaybeAddKey,
+  MaybeRemoveKey,
 } from 'ph/Hadoken'
 
 import { InputSnapshot } from 'ph/InputSnapshot'
+
+export function NewSimpleMapper(
+  map: { [key: string]: SemanticInput },
+): MappingFn {
+  return function(keycode: number): SemanticInput | null {
+    return map[keycode] || null
+  }
+}
 
 export type MappingFn = (keycode: number) => SemanticInput | null
 
@@ -15,7 +23,7 @@ type HadokenKeyboardConfig = HadokenPipelineConfig & {
   keymapFn: MappingFn,
 }
 
-export class HadokenKeyboard {
+export class KeyboardHadoken {
   hadokenData: Hadoken<HadokenKeyboardConfig>
   emitter: Phaser.Events.EventEmitter
 
@@ -33,7 +41,7 @@ export class HadokenKeyboard {
       return
     }
 
-    maybeAddKey(this.hadokenData, sem, e.timeStamp)
+    MaybeAddKey(this.hadokenData, sem, e.timeStamp)
   }
 
   keyup(e: KeyboardEvent) {
@@ -42,7 +50,7 @@ export class HadokenKeyboard {
       return
     }
 
-    maybeRemoveKey(this.hadokenData, sem)
+    MaybeRemoveKey(this.hadokenData, sem)
   }
 
   lastState(): InputSnapshot {
