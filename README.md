@@ -2,7 +2,7 @@
 
 A WIP library to match fighting-game style moves sequences:
 
-![Hadoken demo gif](https://github.com/jdotrjs/phaser3-hadoken/tree/master/README/hadoken_demo.gif)
+![Hadoken demo gif](https://raw.githubusercontent.com/jdotrjs/phaser3-hadoken/master/README/hadoken_demo.gif)
 
 ## License
 
