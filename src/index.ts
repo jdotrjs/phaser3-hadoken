@@ -63,6 +63,7 @@ const ATTACKS = [...PUNCHES, ...KICKS]
 class Scene1 extends Phaser.Scene {
   hadoken: Keyboard.KeyboardHadoken
   facing: 'right' | 'left'
+  keymap: 'dvorak' | 'qwerty'
   lastMatched: Phaser.GameObjects.Text | null
   boxG: Phaser.GameObjects.Image[][]
   displayCount: number
@@ -70,6 +71,7 @@ class Scene1 extends Phaser.Scene {
   constructor() {
     super('scene1')
     this.facing = 'right'
+    this.keymap = 'qwerty'
   }
 
   preload() {
@@ -79,10 +81,14 @@ class Scene1 extends Phaser.Scene {
   }
 
   create() {
+    const dvorakMapper = Keyboard.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak })
+    const qwertykMapper = Keyboard.NewSimpleMapper({ ...keymapArrows, ...keymapQwerty })
     this.hadoken = new Keyboard.KeyboardHadoken(this, {
       bufferLimitType: 'time',
       bufferLimit: 5000,
-      keymapFn: Keyboard.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak }),
+      keymapFn: code => this.keymap === 'dvorak'
+        ? dvorakMapper(code)
+        : qwertykMapper(code),
       filters: Filters.NewChain(
         Filters.CoalesseInputs(DPAD_COMBINATIONS),
         Filters.MapToFacing(() => this.facing),
@@ -215,6 +221,10 @@ class Scene1 extends Phaser.Scene {
     }
   }
 
+  drawKeymap() {
+
+  }
+
   update() {
     this.drawInputHistory()
   }
@@ -232,4 +242,10 @@ let phaserConfig = {
   }
 }
 
-new Phaser.Game(phaserConfig)
+const game = new Phaser.Game(phaserConfig)
+
+export function updateKeymap() {
+  const scn = <any>game.scene.getScene('scene1')
+  const ele = <HTMLSelectElement>document.getElementById('keymapSelect')
+  scn.keymap = ele.value
+}

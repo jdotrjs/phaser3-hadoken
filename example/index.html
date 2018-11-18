@@ -4,8 +4,6 @@
     <meta charset="utf-8"/>
     <script type="text/javascript" src="phaser.min.js"></script>
     <script type="text/javascript" src="../dist/hadoken.js"></script>
-    <!-- <script type="text/javascript" src="Scene1.js"></script>
-    <script type="text/javascript" src="index.js"></script> -->
 
     <link href="flexboxgrid.min.css" rel="stylesheet" type="text/css" >
   </head>
@@ -21,6 +19,11 @@
       <div class='row center-xs'>
         <div class='row col-xs-12 col-md-8 col-lg-6'>
           <div class='start-xs'>
+            Select Keymap:
+            <select id='keymapSelect' value='qwerty' onchange='Hadoken.updateKeymap()'>
+              <option selected value="qwerty">QWERTY</option>
+              <option value="dvorak">Dvorak</option>
+            </select>
           </div>
         </div>
       </div>
