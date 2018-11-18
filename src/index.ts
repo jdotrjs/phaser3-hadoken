@@ -169,7 +169,7 @@ class Scene1 extends Phaser.Scene {
       'forward': '6',
       'up+backward': '7',
       'up': '8',
-      'up+forward': '8',
+      'up+forward': '9',
       'punch:light': 'punch',
       'punch:hard': 'punch',
       'kick:light': 'kick',
