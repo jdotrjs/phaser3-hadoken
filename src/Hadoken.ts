@@ -179,7 +179,6 @@ function maybeCullHistory(ctx: Hadoken<HadokenPipelineConfig>) {
   if (ctx.config.bufferLimitType === 'depth') {
     const remove = rhLen - limit
     if (remove > 0) {
-      console.log(`removing ${remove}`)
       ctx.rawHistory = ctx.rawHistory.slice(remove)
       ctx.processedHistory = ctx.processedHistory.slice(remove)
     }
@@ -192,7 +191,6 @@ function maybeCullHistory(ctx: Hadoken<HadokenPipelineConfig>) {
       }
     }
     if (marker !== 0) {
-      console.log(`slicing ${marker}`)
       ctx.rawHistory = ctx.rawHistory.slice(marker)
       ctx.processedHistory = ctx.processedHistory.slice(marker)
     }
