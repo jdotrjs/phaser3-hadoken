@@ -62,16 +62,16 @@ const KICKS = ['kick:light', 'kick:hard']
 class Scene1 extends Phaser.Scene {
   hadoken: Keyboard.KeyboardHadoken
   facing: 'right' | 'left'
+  boxG: Phaser.GameObjects.Image[]
 
   constructor() {
     super('scene1')
     this.facing = 'right'
   }
 
+
   create() {
-    this.hadoken = new Keyboard.KeyboardHadoken(
-      this,
-      {
+    this.hadoken = new Keyboard.KeyboardHadoken(this, {
         bufferLimitType: 'time',
         bufferLimit: 5000,
         keymapFn: Keyboard.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak }),
@@ -100,6 +100,19 @@ class Scene1 extends Phaser.Scene {
         ],
       },
     )
+
+    const boxesCount = 12
+    const boxWidth = 64
+    const boxBorder = 12
+    const ch = this.cameras.main.height
+    const cw = this.cameras.main.width
+
+    this.boxG = []
+    for (let i = 0; i < boxesCount; i++) {
+      this.boxG.push(
+        this.add.image(0, 0, ''),
+      )
+    }
 
     this.hadoken.emitter.on(Events.InputUpdate, (data: InputUpdateData) => {
       // console.log(data.add)
