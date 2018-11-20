@@ -1,4 +1,4 @@
-import { Events, InputUpdateData, MatchData } from 'ph/Hadoken'
+import { Events, MatchData } from 'ph/Hadoken'
 // TODO: index should resolve automatically...
 import * as Keyboard from 'ph/Keyboard/index'
 import * as Filters from "ph/Common/Filters"
@@ -45,8 +45,9 @@ class Scene1 extends Phaser.Scene {
   }
 
   create() {
-    const dvorakMapper = Keyboard.NewSimpleMapper({ ...Cfg.KeymapArrows, ...Cfg.KeymapDvorak })
-    const qwertykMapper = Keyboard.NewSimpleMapper({ ...Cfg.KeymapArrows, ...Cfg.KeymapQwerty })
+    const dvorakMapper = Keyboard.NewSimpleMapper(Cfg.QWERTY_LAYOUT)
+    const qwertykMapper = Keyboard.NewSimpleMapper(Cfg.DVORAK_LAYOUT)
+
     this.hadoken = new Keyboard.KeyboardHadoken(this, {
       bufferLimitType: 'time',
       bufferLimit: 5000,
@@ -54,20 +55,20 @@ class Scene1 extends Phaser.Scene {
         ? dvorakMapper(code)
         : qwertykMapper(code),
       filters: Filters.NewChain(
+        // convert two directional inputs into a diagonal, if applicable
         Filters.CoalesseInputs(Cfg.DPAD_COMBINATIONS),
+        // change formats from right/left to forward/backward based on the
+        // player's facing
         Filters.MapToFacing(() => this.facing),
+        // only accept the most recent direction
         Filters.OnlyMostRecent(Cfg.DIRECTIONS),
+        // and the most recent attack
         Filters.OnlyMostRecent(Cfg.ATTACKS),
       ),
+      // defines a set of moves to register
       matchers: [
-        {
-          name: 'hadoken',
-          match: SimpleMatcher.New(Cfg.HADOKEN),
-        },
-        {
-          name: 'huricane_kick',
-          match: SimpleMatcher.New(Cfg.HURICANE_KICK),
-        },
+        { name: 'hadoken', match: SimpleMatcher.New(Cfg.HADOKEN), },
+        { name: 'huricane_kick', match: SimpleMatcher.New(Cfg.HURICANE_KICK), },
         {
           name: 'summon_suffering',
           match: SimpleMatcher.New(Cfg.SS, { stepDelay: 800, totalDelay: 6000 }),
@@ -75,6 +76,7 @@ class Scene1 extends Phaser.Scene {
       ],
     })
 
+    // hadoken will emit a match event when a move's input sequence is matched
     this.hadoken.emitter.on(Events.Match, this._onMoveMatched, this)
 
     this._constructUI()
@@ -230,6 +232,7 @@ let phaserConfig = {
 
 const game = new Phaser.Game(phaserConfig)
 
+// hook for demo page to swap keymaps
 export function selectKeymap(newmap: 'qwerty' | 'dvorak') {
   const scn = <Scene1>game.scene.getScene('scene1')
   scn.keymap = newmap
