@@ -75,7 +75,7 @@ class Scene1 extends Phaser.Scene {
   }
 
   preload() {
-    ['1', '2', '3', '4', '6', '7', '8', '9', 'punch', 'kick', 'guard'].forEach(n => {
+    ['1', '2', '3', '4', '6', '7', '8', '9', 'punch', 'punch_hard', 'kick', 'kick_hard', 'guard'].forEach(n => {
       this.load.image(`input_${n}`, `./assets/${n}.png`)
     })
   }
@@ -139,30 +139,58 @@ class Scene1 extends Phaser.Scene {
       }
     }
 
-    this.hadoken.emitter.on(Events.Match, (data: MatchData) => {
-      if (this.lastMatched) {
-        this.lastMatched.setVisible(false)
-      }
+    this.controls = []
+    const txtCfg = { fontFamily: "Impact, ArialBlack", fontSize: 35, color: '#3300cc', align: 'center' }
+    const col1 = cw / 3
+    const col2 = cw / 2
+    const col3 = 2 /3 * cw
+    this.controls.push(this.add.text(col1, 0, ' : A', txtCfg))
+    const row1 = this.controls[0].height
+    this.controls[0].setY(row1)
+    const row2 = row1 +this.controls[0].height + 4
+    this.controls.push(this.add.text(col1, row2, ' : S', txtCfg))
+    this.controls.push(this.add.text(col2, row1, ' : D', txtCfg))
+    this.controls.push(this.add.text(col2, row2, ' : F', txtCfg))
+    this.controls.push(this.add.text(col3, row1 + (row2 - row1) / 2, ' : G', txtCfg))
 
-      const txt = this.add.text(
-        0,
-        ch / 3,
-        data.name,
-        { fontFamily: "Impact, ArialBlack", fontSize: 74, color: '#3300cc', align: 'center' },
-      )
+    const offset = this.controls[0].width
+    const sz = this.controls[0].height
 
-      this.lastMatched = txt
-      txt.setShadow(2, 2, "#333333", 2, true, true)
-      txt.setOrigin(0)
-      txt.setX(this.cameras.main.width / 2 - (txt.width / 2))
+    this.add.image(col1 - offset, row1, 'input_punch').setDisplaySize(sz, sz).setOrigin(0)
+    this.add.image(col2 - offset, row1, 'input_punch_hard').setDisplaySize(sz, sz).setOrigin(0)
+    this.add.image(col1 - offset, row2, 'input_kick').setDisplaySize(sz, sz).setOrigin(0)
+    this.add.image(col2 - offset, row2, 'input_kick_hard').setDisplaySize(sz, sz).setOrigin(0)
+    this.add.image(col3 - offset, row1 + (row2 - row1) / 2, 'input_guard').setDisplaySize(sz, sz).setOrigin(0)
 
-      this.add.tween({
-        targets: txt,
-        alpha: 0,
-        delay: 500,
-        duration: 1200,
-        ease: 'Power2',
-      })
+    this.hadoken.emitter.on(Events.Match, this.matchMove, this)
+  }
+
+  controls: Phaser.GameObjects.Text[]
+
+  matchMove(data: MatchData) {
+    if (this.lastMatched) {
+      this.lastMatched.setVisible(false)
+    }
+
+    const ch = this.cameras.main.height
+    const txt = this.add.text(
+      0,
+      ch / 3,
+      data.name,
+      { fontFamily: "Impact, ArialBlack", fontSize: 74, color: '#3300cc', align: 'center' },
+    )
+
+    this.lastMatched = txt
+    txt.setShadow(2, 2, "#333333", 2, true, true)
+    txt.setOrigin(0)
+    txt.setX(this.cameras.main.width / 2 - (txt.width / 2))
+
+    this.add.tween({
+      targets: txt,
+      alpha: 0,
+      delay: 500,
+      duration: 1200,
+      ease: 'Power2',
     })
   }
 
@@ -177,9 +205,9 @@ class Scene1 extends Phaser.Scene {
       'up': '8',
       'up+forward': '9',
       'punch:light': 'punch',
-      'punch:hard': 'punch',
+      'punch:hard': 'punch_hard',
       'kick:light': 'kick',
-      'kick:hard': 'kick',
+      'kick:hard': 'kick_hard',
       'guard': 'guard',
     }
     const history = this.hadoken.hadokenData.processedHistory.filter(h => Object.keys(h.state).length).slice(-1 * this.displayCount)
@@ -244,8 +272,20 @@ let phaserConfig = {
 
 const game = new Phaser.Game(phaserConfig)
 
-export function updateKeymap() {
-  const scn = <any>game.scene.getScene('scene1')
-  const ele = <HTMLSelectElement>document.getElementById('keymapSelect')
-  scn.keymap = ele.value
+export function selectKeymap(newmap: 'qwerty' | 'dvorak') {
+  const scn = <Scene1>game.scene.getScene('scene1')
+  scn.keymap = newmap
+
+  const nowQwerty = newmap === 'qwerty'
+  const letters = nowQwerty
+    ? ['A', 'S', 'D', 'F', 'G']
+    : ['A', 'O', 'E', 'U', 'I']
+  letters.forEach((l, i) => { scn.controls[i].setText(` : ${l}`) })
+
+  const qwEle = <HTMLElement>document.getElementById('keymap-qwerty')
+  qwEle.className = 'selectable' + (nowQwerty ? ' selected_keymap' : '')
+
+  const dvEle = <HTMLElement>document.getElementById('keymap-dvorak')
+  dvEle.className  = 'selectable' + (nowQwerty ? '' : ' selected_keymap')
+
 }

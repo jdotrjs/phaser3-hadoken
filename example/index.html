@@ -6,6 +6,20 @@
     <script type="text/javascript" src="../dist/hadoken.js"></script>
 
     <link href="flexboxgrid.min.css" rel="stylesheet" type="text/css" >
+    <style type="text/css">
+      .selected_keymap {
+        font-weight: bold;
+      }
+
+      .selectable {
+        color: #33aaff;
+        cursor: pointer;
+      }
+
+      .selectable:hover {
+        text-decoration: underline;
+      }
+    </style>
   </head>
 
   <body>
@@ -20,10 +34,8 @@
         <div class='row col-xs-12 col-md-8 col-lg-6'>
           <div class='start-xs'>
             Select Keymap:
-            <select id='keymapSelect' value='qwerty' onchange='Hadoken.updateKeymap()'>
-              <option selected value="qwerty">QWERTY</option>
-              <option value="dvorak">Dvorak</option>
-            </select>
+              <span id="keymap-qwerty" onclick="Hadoken.selectKeymap('qwerty')" class="selectable selected_keymap">Qwerty</span> /
+              <span id="keymap-dvorak" onclick="Hadoken.selectKeymap('dvorak')" class="selectable">Dvorak</span>
           </div>
         </div>
       </div>
