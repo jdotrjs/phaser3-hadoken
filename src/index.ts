@@ -3,75 +3,39 @@ import { Events, InputUpdateData, MatchData } from 'ph/Hadoken'
 import * as Keyboard from 'ph/Keyboard/index'
 import * as Filters from "ph/Common/Filters"
 import * as SimpleMatcher from 'ph/Common/SimpleMatcher'
-
-const c = Phaser.Input.Keyboard.KeyCodes
-
-const keymapArrows = {
-  [c.DOWN]:  'down',
-  [c.UP]:    'up',
-  [c.RIGHT]: 'right',
-  [c.LEFT]:  'left',
-}
-
-const DPAD_COMBINATIONS: Filters.CoalesseMapping = {
-  'down+left':  ['down', 'left' ],
-  'down+right': ['down', 'right'],
-  'up+left':    ['up',   'left' ],
-  'up+right':   ['up',   'right'],
-}
-
-const keymapDvorak = {
-  [c.A]: 'punch:light',
-  [c.O]: 'punch:hard',
-  [c.E]: 'kick:light',
-  [c.U]: 'kick:hard',
-  [c.I]: 'guard',
-}
-const keymapQwerty = {
-  [c.A]: 'punch:light',
-  [c.S]: 'punch:hard',
-  [c.D]: 'kick:light',
-  [c.F]: 'kick:hard',
-  [c.G]: 'guard',
-}
-
-const DIRECTIONS = [
-  'up',
-  'up+forward',
-  'forward',
-  'down+forward',
-  'down',
-  'down+backward',
-  'backward',
-  'up+backward',
-]
-const QFC = ['down', 'down+forward', 'forward']
-const QBC = ['down', 'down+backward', 'backward']
-const SS = [
-  'down+forward',
-  'up+backward',
-  'forward',
-  'down',
-  'down+forward',
-  'down+backward',
-]
-const PUNCHES = ['punch:light', 'punch:hard']
-const KICKS = ['kick:light', 'kick:hard']
-const ATTACKS = [...PUNCHES, ...KICKS]
-
+import * as Cfg from 'ph/ExampleConfig'
 
 class Scene1 extends Phaser.Scene {
+  // --- The following three attributes are related to hadoken ---
+  // reference to the hadoken library
   hadoken: Keyboard.KeyboardHadoken
+
+  // indicates which direction the character is facing (so that "forward"
+  // means something reasonable)
   facing: 'right' | 'left'
+
+  // which keymap do we want to use for attacks
   keymap: 'dvorak' | 'qwerty'
+
+  // -- The remainder are used to build the demo interface ---
+
+  // reference to the last matched move being displayed
   lastMatched: Phaser.GameObjects.Text | null
+
+  // grid of images that will be used to display key inputs
   boxG: Phaser.GameObjects.Image[][]
+
+  // letters that map to the attack input
+  controls: Phaser.GameObjects.Text[]
+
+  // how many steps of input we display
   displayCount: number
 
   constructor() {
     super('scene1')
     this.facing = 'right'
     this.keymap = 'qwerty'
+    this.displayCount = 12
   }
 
   preload() {
@@ -81,8 +45,8 @@ class Scene1 extends Phaser.Scene {
   }
 
   create() {
-    const dvorakMapper = Keyboard.NewSimpleMapper({ ...keymapArrows, ...keymapDvorak })
-    const qwertykMapper = Keyboard.NewSimpleMapper({ ...keymapArrows, ...keymapQwerty })
+    const dvorakMapper = Keyboard.NewSimpleMapper({ ...Cfg.KeymapArrows, ...Cfg.KeymapDvorak })
+    const qwertykMapper = Keyboard.NewSimpleMapper({ ...Cfg.KeymapArrows, ...Cfg.KeymapQwerty })
     this.hadoken = new Keyboard.KeyboardHadoken(this, {
       bufferLimitType: 'time',
       bufferLimit: 5000,
@@ -90,39 +54,41 @@ class Scene1 extends Phaser.Scene {
         ? dvorakMapper(code)
         : qwertykMapper(code),
       filters: Filters.NewChain(
-        Filters.CoalesseInputs(DPAD_COMBINATIONS),
+        Filters.CoalesseInputs(Cfg.DPAD_COMBINATIONS),
         Filters.MapToFacing(() => this.facing),
-        Filters.OnlyMostRecent(DIRECTIONS),
-        Filters.OnlyMostRecent(ATTACKS),
+        Filters.OnlyMostRecent(Cfg.DIRECTIONS),
+        Filters.OnlyMostRecent(Cfg.ATTACKS),
       ),
       matchers: [
         {
           name: 'hadoken',
-          match: SimpleMatcher.New([...QFC, 'punch:light']),
+          match: SimpleMatcher.New(Cfg.HADOKEN),
         },
         {
           name: 'huricane_kick',
-          match: SimpleMatcher.New([...QBC, 'kick:light']),
+          match: SimpleMatcher.New(Cfg.HURICANE_KICK),
         },
         {
           name: 'summon_suffering',
-          match: SimpleMatcher.New(
-            [...SS, 'punch:light', 'guard'],
-            { stepDelay: 800, totalDelay: 6000 },
-          ),
+          match: SimpleMatcher.New(Cfg.SS, { stepDelay: 800, totalDelay: 6000 }),
         }
       ],
     })
 
+    this.hadoken.emitter.on(Events.Match, this._onMoveMatched, this)
+
+    this._constructUI()
+  }
+
+  _constructUI() {
     const ch = this.cameras.main.height
     const cw = this.cameras.main.width
-    this.displayCount = 12
     const boxesCount = this.displayCount
     const boxBorder = 12
     const bb2 = boxBorder / 2
     const offsetX = 40
     const offsetY = 3/5 * ch
-    const boxWidth = (cw - boxesCount * boxBorder - 2 * offsetX) / 12
+    const boxWidth = (cw - boxesCount * boxBorder - 2 * offsetX) / boxesCount
     const boxHeight = boxWidth
     this.lastMatched = null
 
@@ -161,13 +127,9 @@ class Scene1 extends Phaser.Scene {
     this.add.image(col1 - offset, row2, 'input_kick').setDisplaySize(sz, sz).setOrigin(0)
     this.add.image(col2 - offset, row2, 'input_kick_hard').setDisplaySize(sz, sz).setOrigin(0)
     this.add.image(col3 - offset, row1 + (row2 - row1) / 2, 'input_guard').setDisplaySize(sz, sz).setOrigin(0)
-
-    this.hadoken.emitter.on(Events.Match, this.matchMove, this)
   }
 
-  controls: Phaser.GameObjects.Text[]
-
-  matchMove(data: MatchData) {
+  _onMoveMatched(data: MatchData) {
     if (this.lastMatched) {
       this.lastMatched.setVisible(false)
     }
@@ -194,7 +156,7 @@ class Scene1 extends Phaser.Scene {
     })
   }
 
-  drawInputHistory() {
+  _drawInputHistory() {
     const nameMapping : { [n: string]: string }= {
       'down+backward': '1',
       'down': '2',
@@ -219,8 +181,8 @@ class Scene1 extends Phaser.Scene {
       if (inputs.length > 3) {
         console.error(`inputs > 3: [${inputs.join(', ')}]`)
       }
-      const directions = DIRECTIONS.filter(i => inputs.indexOf(i) !== -1)
-      const attacks = ATTACKS.filter(i => inputs.indexOf(i) !== -1)
+      const directions = Cfg.DIRECTIONS.filter(i => inputs.indexOf(i) !== -1)
+      const attacks = Cfg.ATTACKS.filter(i => inputs.indexOf(i) !== -1)
       const guard = inputs.indexOf('guard') == -1 ? [] : ['guard']
       let j = 0
       if (directions.length) {
@@ -249,12 +211,8 @@ class Scene1 extends Phaser.Scene {
     }
   }
 
-  drawKeymap() {
-
-  }
-
   update() {
-    this.drawInputHistory()
+    this._drawInputHistory()
   }
 }
 

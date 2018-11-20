@@ -74,24 +74,57 @@ export type MatchData = {
   meta?: object,
 }
 
-export type Hadoken<T extends HadokenPipelineConfig> = {
+export type HadokenData<T extends HadokenPipelineConfig> = {
   scene: Phaser.Scene,
   config: T,
   emitter: Phaser.Events.EventEmitter,
+
+  isPaused: boolean,
 
   rawHistory: InputSnapshot[],
   processedHistory: InputSnapshot[],
 }
 
+export class Hadoken<T extends HadokenPipelineConfig> {
+  hadokenData: HadokenData<T>
+  emitter: Phaser.Events.EventEmitter
+
+  constructor(parent: Phaser.Scene, cfg: T) {
+    this.hadokenData = NewHadoken(parent, cfg)
+    this.emitter = this.hadokenData.emitter
+  }
+
+  pause() {
+    HadokenPause(this.hadokenData)
+  }
+
+  resume() {
+    HadokenResume(this.hadokenData)
+  }
+
+  clear() {
+    HadokenDataClear(this.hadokenData)
+  }
+
+  lastState(): InputSnapshot | null {
+    if (this.hadokenData.processedHistory.length === 0) {
+      return null
+    }
+
+    return this.hadokenData.processedHistory.slice(-1)[0]
+  }
+}
+
 export function NewHadoken<Cfg extends HadokenPipelineConfig>(
   scn: Phaser.Scene,
   cfg: Cfg,
-): Hadoken<Cfg> {
+): HadokenData<Cfg> {
   const state = {
     scene: scn,
     config: cfg,
     emitter: new Phaser.Events.EventEmitter(),
-    rawHistory: [NewInputSnapshot()],
+    isPaused: false,
+    rawHistory: [],
     processedHistory: [],
   }
   scn.events.on('preupdate', mkHadokenUpdate(state))
@@ -109,7 +142,7 @@ export function NewHadoken<Cfg extends HadokenPipelineConfig>(
  *
  * @param ctx a Hadoken context
  */
-function mkHadokenUpdate(ctx: Hadoken<HadokenPipelineConfig>): () => void {
+function mkHadokenUpdate(ctx: HadokenData<HadokenPipelineConfig>): () => void {
   const checkMatch = (matched: [string, object | null], cur: MoveDef): [string, object | null] => {
     if (matched[0] !== '') {
       return matched
@@ -163,8 +196,10 @@ function mkHadokenUpdate(ctx: Hadoken<HadokenPipelineConfig>): () => void {
 
       const matchers = ctx.config.matchers || []
 
-      maybeEmitUpdates()
-      maybeEmitMatched(matchers.reduce(checkMatch, ['', null]))
+      if (!ctx.isPaused) {
+        maybeEmitUpdates()
+        maybeEmitMatched(matchers.reduce(checkMatch, ['', null]))
+      }
     }
     maybeCullHistory(ctx)
   }
@@ -173,7 +208,7 @@ function mkHadokenUpdate(ctx: Hadoken<HadokenPipelineConfig>): () => void {
 // TODO: history culling isn't well tested yet (both the actual function and
 // also the implication that now history may be empty instead of always having
 // at lesat one frame)
-function maybeCullHistory(ctx: Hadoken<HadokenPipelineConfig>) {
+function maybeCullHistory(ctx: HadokenData<HadokenPipelineConfig>) {
   const limit = ctx.config.bufferLimit
   const rhLen = ctx.rawHistory.length
   if (ctx.config.bufferLimitType === 'depth') {
@@ -202,7 +237,11 @@ function maybeCullHistory(ctx: Hadoken<HadokenPipelineConfig>) {
  * considered pressed. If the key had already been added and not removed then
  * no change is made.
  */
-export function MaybeAddKey(ctx: Hadoken<HadokenPipelineConfig>, key: SemanticInput, ts: number) {
+export function MaybeAddKey(ctx: HadokenData<HadokenPipelineConfig>, key: SemanticInput, ts: number) {
+  if (ctx.isPaused) {
+    return
+  }
+
   const now = Date.now()
 
   const hasHistory = ctx.rawHistory.length > 0
@@ -229,7 +268,12 @@ export function MaybeAddKey(ctx: Hadoken<HadokenPipelineConfig>, key: SemanticIn
  * pressed state in the hadoken context. If the key was not considered pressed
  * no change will be made.
  */
-export function MaybeRemoveKey(ctx: Hadoken<HadokenPipelineConfig>, key: SemanticInput) {
+export function MaybeRemoveKey(ctx: HadokenData<HadokenPipelineConfig>, key: SemanticInput) {
+  if (ctx.isPaused) {
+
+    return
+  }
+
   const hasHistory = ctx.rawHistory.length > 0
   if (!hasHistory) {
     return
@@ -248,11 +292,24 @@ export function MaybeRemoveKey(ctx: Hadoken<HadokenPipelineConfig>, key: Semanti
   }
 }
 
+export function HadokenPause(data: HadokenData<HadokenPipelineConfig>) {
+  data.isPaused = true
+}
+
+export function HadokenResume(data: HadokenData<HadokenPipelineConfig>) {
+  data.isPaused = false
+}
+
+export function HadokenDataClear(data: HadokenData<HadokenPipelineConfig>) {
+  data.rawHistory = []
+  data.processedHistory = []
+}
+
 /**
  * Returns the keys that are pressed in the most recent state.
  */
 export function curKeys(
-  ctx: Hadoken<HadokenPipelineConfig>,
+  ctx: HadokenData<HadokenPipelineConfig>,
   processed: boolean = true,
 ): SemanticInput[] {
   const history = processed ? ctx.processedHistory : ctx.rawHistory
