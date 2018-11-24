@@ -1,3 +1,19 @@
+#### Table of Contents
+- [Phaser3 Hadoken](#phaser3-hadoken)
+  - [Get `phaser3-hadoken`: direct link](#get-phaser3-hadoken-direct-link)
+  - [Get `phaser3-hadoken`: `npm` and `yarn`](#get-phaser3-hadoken-npm-and-yarn)
+- [Using Hadoken](#using-hadoken)
+  - [How it Works](#how-it-works)
+  - [Details and Examples](#details-and-examples)
+    - [Adapters](#adapters)
+    - [Filters](#filters)
+    - [Matchers](#matchers)
+      - [SimpleMatcher](#simplematcher)
+  - [Other uses](#other-uses)
+    - [Even weirder usages](#even-weirder-usages)
+- [Sample project](#sample-project)
+- [License](#license)
+
 # Phaser3 Hadoken
 
 A WIP library to match fighting-game style move sequencess. A [live demo][demo] is
@@ -332,7 +348,7 @@ More details can be found in code+docs of [SimpleMatcher.ts][src-simplematcher].
 
 [src-simplematcher]: https://github.com/jdotrjs/phaser3-hadoken/blob/master/src/Common/SimpleMatcher.ts
 
-### Other uses
+## Other uses
 
 If you were paying close attention you might have noticed that while Hadoken
 says it's about matching fighting came inputs on the box it's really just a
@@ -347,7 +363,7 @@ behavior but is supported by
 2. `hadokenObj.pressed()` which returns an array of all pressed inputs which
    makes checking for key state trivial in your input loop.
 
-#### Even weirder usages
+### Even weirder usages
 
 We've been speaking of adapters as if they can only map from some controller
 that the user has. But really an adapter could be built around _anything_.
