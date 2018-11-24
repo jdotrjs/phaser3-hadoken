@@ -3,7 +3,7 @@ import * as Filters from 'ph/Common/Filters'
 const c = Phaser.Input.Keyboard.KeyCodes
 
 // This maps a keyboard key code to a named input
-export const KeymapArrows = {
+const KeymapArrows = {
   [c.DOWN]:  'down',
   [c.UP]:    'up',
   [c.RIGHT]: 'right',
@@ -11,7 +11,7 @@ export const KeymapArrows = {
 }
 
 // For the Dvorak layout this maps the homerow keys to various attakcs
-export const KeymapDvorak = {
+const KeymapDvorak = {
   [c.A]: 'punch:light',
   [c.O]: 'punch:hard',
   [c.E]: 'kick:light',
@@ -20,13 +20,16 @@ export const KeymapDvorak = {
 }
 
 // For the Qwerty layout this maps the homerow keys to various attakcs
-export const KeymapQwerty = {
+const KeymapQwerty = {
   [c.A]: 'punch:light',
   [c.S]: 'punch:hard',
   [c.D]: 'kick:light',
   [c.F]: 'kick:hard',
   [c.G]: 'guard',
 }
+
+export const QWERTY_LAYOUT = { ...KeymapArrows, ...KeymapQwerty }
+export const DVORAK_LAYOUT = { ...KeymapArrows, ...KeymapDvorak }
 
 // This specifies how a set of combined inputs get constructed
 export const DPAD_COMBINATIONS: Filters.CoalesseMapping = {

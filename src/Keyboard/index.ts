@@ -6,9 +6,6 @@
   Hadoken,
 } from 'ph/Hadoken'
 
-import { InputSnapshot } from 'ph/InputSnapshot'
-
-
 type MappingFn = (keycode: number) => SemanticInput | null
 
 /**

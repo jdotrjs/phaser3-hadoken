@@ -13,7 +13,6 @@ class Scene1 extends Phaser.Scene {
   // indicates which direction the character is facing (so that "forward"
   // means something reasonable)
   facing: 'right' | 'left'
-
   // which keymap do we want to use for attacks
   keymap: 'dvorak' | 'qwerty'
 
@@ -215,6 +214,9 @@ class Scene1 extends Phaser.Scene {
 
   update() {
     this._drawInputHistory()
+    if (this.hadoken.hadokenData.matchedMove !== null) {
+      console.log(`matched: ${this.hadoken.hadokenData.matchedMove}`)
+    }
   }
 }
 

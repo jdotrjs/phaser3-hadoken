@@ -1,6 +1,5 @@
 import {
   InputSnapshot,
-  NewInputSnapshot,
   NewInputs,
   RemovedInputs,
   HasSameKeys,
@@ -24,7 +23,7 @@ export type MatchFn = (history: InputSnapshot[]) => [boolean, object | null]
 // Defines a move that Hadoken should understand
 export type MoveDef = {
   name: string,
-  match: MatchFn
+  match: MatchFn,
 }
 
 export type HadokenPipelineConfig = {
@@ -55,6 +54,10 @@ export const Events = {
   // Emited when a move is matched against the recent input buffer. When Match
   // is emited it will be paired with data of type MatchData.
   Match: 'match',
+
+  // TODO: implement this
+  // InputPressed: 'inputpressed',
+  // InputReleased: 'inputreleased',
 }
 
 export type InputUpdateData = {
@@ -77,14 +80,16 @@ export type MatchData = {
 export type HadokenData<T extends HadokenPipelineConfig> = {
   scene: Phaser.Scene,
   config: T,
-  emitter: Phaser.Events.EventEmitter,
 
+  emitter: Phaser.Events.EventEmitter,
+  matchedMove: string | null,
   isPaused: boolean,
 
   rawHistory: InputSnapshot[],
   processedHistory: InputSnapshot[],
 }
 
+// TODO: rewrite so that you can use multiple adapters per Hadoken
 export class Hadoken<T extends HadokenPipelineConfig> {
   hadokenData: HadokenData<T>
   emitter: Phaser.Events.EventEmitter
@@ -106,12 +111,12 @@ export class Hadoken<T extends HadokenPipelineConfig> {
     HadokenDataClear(this.hadokenData)
   }
 
-  lastState(): InputSnapshot | null {
+  pressed(): SemanticInput[] {
     if (this.hadokenData.processedHistory.length === 0) {
-      return null
+      return []
     }
 
-    return this.hadokenData.processedHistory.slice(-1)[0]
+    return Object.keys(this.hadokenData.processedHistory.slice(-1)[0].state)
   }
 }
 
@@ -122,6 +127,7 @@ export function NewHadoken<Cfg extends HadokenPipelineConfig>(
   const state = {
     scene: scn,
     config: cfg,
+    matchedMove: null,
     emitter: new Phaser.Events.EventEmitter(),
     isPaused: false,
     rawHistory: [],
@@ -172,14 +178,17 @@ function mkHadokenUpdate(ctx: HadokenData<HadokenPipelineConfig>): () => void {
     }
   }
 
-  const maybeEmitMatched = (matchResult: [string, object | null]) => {
-    if (matchResult[0] !== '') {
+  const processMatchResults = (matchResult: [string, object | null]) => {
+    if (matchResult !== null && matchResult[0] !== '') {
       const meta = matchResult[1] ? { meta: matchResult[1] } : null
+      ctx.matchedMove = matchResult[0]
       ctx.emitter.emit(Events.Match, { name: matchResult[0], ...meta })
     }
   }
 
   return () => {
+    ctx.matchedMove = null
+
     // TODO: if raw history exceeds processed history be > 1 frame it suggests
     // multiple input events within a 1-frame period; should we collapse these
     // into a single processed frame?
@@ -193,12 +202,11 @@ function mkHadokenUpdate(ctx: HadokenData<HadokenPipelineConfig>): () => void {
       const filtered = filters ? filters(state) : state
       ctx.processedHistory.push(filtered)
 
-
       const matchers = ctx.config.matchers || []
 
       if (!ctx.isPaused) {
         maybeEmitUpdates()
-        maybeEmitMatched(matchers.reduce(checkMatch, ['', null]))
+        processMatchResults(matchers.reduce(checkMatch, ['', null]))
       }
     }
     maybeCullHistory(ctx)

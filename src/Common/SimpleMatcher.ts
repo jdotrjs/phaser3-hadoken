@@ -1,7 +1,6 @@
 import { InputSnapshot, NewInputs } from 'ph/InputSnapshot'
 import { MatchFn, SemanticInput } from 'ph/Hadoken'
 
-// TODO: lol, this should be checking a full snapshot, not a single input
 type InputPredicate = (history: InputSnapshot[], curIdx: number) => boolean
 type InputCheck = SemanticInput | InputPredicate
 
