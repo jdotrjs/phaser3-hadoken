@@ -1,5 +1,5 @@
 #### Table of Contents
-- [Phaser3 Hadoken](#phaser3-hadoken)
+- [Phaser3 Hadoken / demo](#phaser3-hadoken)
   - [Get `phaser3-hadoken`: direct link](#get-phaser3-hadoken-direct-link)
   - [Get `phaser3-hadoken`: `npm` and `yarn`](#get-phaser3-hadoken-npm-and-yarn)
 - [Using Hadoken](#using-hadoken)
