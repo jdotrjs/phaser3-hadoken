@@ -128,6 +128,8 @@ export function New(
       }
     }
 
-    return [!!mvIndicies, null]
+    return !!mvIndicies
+      ? [true, { indicies: mvIndicies.reverse() }]
+      : [false, null]
   }
 }

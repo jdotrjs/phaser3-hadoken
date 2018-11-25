@@ -155,6 +155,12 @@ class Scene1 extends Phaser.Scene {
       duration: 1200,
       ease: 'Power2',
     })
+
+    const m = data.meta as {indicies: number[]}
+    m.indicies.forEach(idx => {
+      const state = this.hadoken.hadokenData.processedHistory[idx].state
+      console.log(`${idx} => [${Object.keys(state).join(', ')}]`)
+    })
   }
 
   _drawInputHistory() {
