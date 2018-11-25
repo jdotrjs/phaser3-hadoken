@@ -1,21 +1,18 @@
-# Phaser3 Hadoken
-
-**Table of Contents**
-- [Phaser3 Hadoken](#phaser3-hadoken)
-  - [Demo](#demo)
-  - [Get it: direct link](#get-it-direct-link)
-  - [Get it: `npm` and `yarn`](#get-it-npm-and-yarn)
-  - [Using Hadoken](#using-hadoken)
-    - [How it Works](#how-it-works)
-    - [Details and Examples](#details-and-examples)
-      - [Adapters](#adapters)
-      - [Filters](#filters)
-      - [Matchers](#matchers)
-      - [SimpleMatcher](#simplematcher)
-    - [Other uses](#other-uses)
-    - [Even weirder usages](#even-weirder-usages)
-  - [Sample project](#sample-project)
-  - [License](#license)
+#### Table of Contents
+- [Demo](#demo)
+- [Get it: direct link](#get-it-direct-link)
+- [Get it: `npm` and `yarn`](#get-it-npm-and-yarn)
+- [Using Hadoken](#using-hadoken)
+  - [How it Works](#how-it-works)
+  - [Details and Examples](#details-and-examples)
+    - [Adapters](#adapters)
+    - [Filters](#filters)
+    - [Matchers](#matchers)
+    - [SimpleMatcher](#simplematcher)
+  - [Other uses](#other-uses)
+  - [Even weirder usages](#even-weirder-usages)
+- [Sample project](#sample-project)
+- [License](#license)
 
 ## Demo
 
@@ -335,7 +332,7 @@ receive at most 1 of a move in however many milliseconds are specified in
 Hadoken comes with a simple matcher function that takes a sequence of moves (or
 for the more advanced case move predicate) and looks for that sequence in its
 input buffer. It does _not_ require that those moves are sequential. That means
-that `A A B` would batch against all of the following input histories:
+that `A A B` would match against all of the following input histories:
 
 - `A A B`
 - `A C A B`
