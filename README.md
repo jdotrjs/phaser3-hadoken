@@ -1,20 +1,23 @@
-#### Table of Contents
-- [Phaser3 Hadoken](#phaser3-hadoken)
-  - [Get `phaser3-hadoken`: direct link](#get-phaser3-hadoken-direct-link)
-  - [Get `phaser3-hadoken`: `npm` and `yarn`](#get-phaser3-hadoken-npm-and-yarn)
-- [Using Hadoken](#using-hadoken)
-  - [How it Works](#how-it-works)
-  - [Details and Examples](#details-and-examples)
-    - [Adapters](#adapters)
-    - [Filters](#filters)
-    - [Matchers](#matchers)
-      - [SimpleMatcher](#simplematcher)
-  - [Other uses](#other-uses)
-    - [Even weirder usages](#even-weirder-usages)
-- [Sample project](#sample-project)
-- [License](#license)
-
 # Phaser3 Hadoken
+
+**Table of Contents**
+- [Phaser3 Hadoken](#phaser3-hadoken)
+  - [Demo](#demo)
+  - [Get it: direct link](#get-it-direct-link)
+  - [Get it: `npm` and `yarn`](#get-it-npm-and-yarn)
+  - [Using Hadoken](#using-hadoken)
+    - [How it Works](#how-it-works)
+    - [Details and Examples](#details-and-examples)
+      - [Adapters](#adapters)
+      - [Filters](#filters)
+      - [Matchers](#matchers)
+      - [SimpleMatcher](#simplematcher)
+    - [Other uses](#other-uses)
+    - [Even weirder usages](#even-weirder-usages)
+  - [Sample project](#sample-project)
+  - [License](#license)
+
+## Demo
 
 A WIP library to match fighting-game style move sequencess. A [live demo][demo] is
 available and a gif is too:
@@ -23,7 +26,7 @@ available and a gif is too:
 
 [demo]: https://jdotrjs.github.io/demos/phaser3-hadoken/index.html
 
-## Get `phaser3-hadoken`: direct link
+## Get it: direct link
 
 Direct downloads of `phaser3-hadoken` can be had through the
 [releases list][gh-releases] on github. You can then include it as normal by
@@ -42,11 +45,11 @@ I use this approach in the demo. The source is included, see the
 [gh-releases]: https://github.com/jdotrjs/phaser3-hadoken/releases
 [a-sample]: #Sample-project
 
-## Get `phaser3-hadoken`: `npm` and `yarn`
+## Get it: `npm` and `yarn`
 
 TODO
 
-# Using Hadoken
+## Using Hadoken
 
 Hadoken should work for many users with just the provided code. But if it
 is behaves differently than you'd like most aspects of how it processes and
@@ -54,7 +57,7 @@ matches inputs and be replaced. This README will cover a summary of how it
 works by default and then get into the details of most of the code that
 comes with the library.
 
-## How it Works
+### How it Works
 
 Hadoken can be thought of as an interface between your game and how Phaser
 manages input. You tell it what an input "means" to your game + what sequence
@@ -91,13 +94,13 @@ _things are happening_? Take your pick:
    simple `if (hadokenObj.matchedMove !== null) { ... }` or the like to check
    for move matching.
 
-## Details and Examples
+### Details and Examples
 
 Now that you have a high level understanding of how input works its way through
 Hadoken and how it signals to you that moves are matching let's talk in detail
 about some of those components.
 
-### Adapters
+#### Adapters
 
 As a user of Hadoken you'll probably be creating instances of the adapters based
 on which controller you want to use. Each of these adapters take their own config
@@ -166,7 +169,7 @@ const hadoken = new Hadoken.KeyboardHadoken(scene, {
 Now that we understand how to map from arbitrary controller input to something
 meaningful lets look at applying filters to that input.
 
-### Filters
+#### Filters
 
 A filter is a series of functions that can be applied to a snapshot of input
 state. Specifically:
@@ -230,7 +233,7 @@ Some common filter usage is:
 
 [demo-src-facing]: TODO
 
-### Matchers
+#### Matchers
 
 To close out let's actually start matching move sequences based on our filtered
 input. To do that we need to understand how moves are defined for Hadoken:
@@ -348,7 +351,7 @@ More details can be found in code+docs of [SimpleMatcher.ts][src-simplematcher].
 
 [src-simplematcher]: https://github.com/jdotrjs/phaser3-hadoken/blob/master/src/Common/SimpleMatcher.ts
 
-## Other uses
+### Other uses
 
 If you were paying close attention you might have noticed that while Hadoken
 says it's about matching fighting came inputs on the box it's really just a

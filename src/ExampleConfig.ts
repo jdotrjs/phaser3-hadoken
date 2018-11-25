@@ -1,4 +1,5 @@
 import * as Filters from 'ph/Common/Filters'
+import * as Match from 'ph/Common/Matchers'
 
 const c = Phaser.Input.Keyboard.KeyCodes
 
@@ -73,11 +74,11 @@ export const ATTACKS = [...PUNCHES, ...KICKS]
 
 // quarter forward circle
 export const QFC = [DPAD.down, DPAD.down_forward, DPAD.forward]
-export const HADOKEN = [...QFC, ACTION.punch_light]
+export const HADOKEN = [...QFC, Match.OneWithPrefix('punch:')]
 
 // quarter backward circle
 export const QBC = [DPAD.down, DPAD.down_backward, DPAD.backward]
-export const HURICANE_KICK = [...QBC, ACTION.kick_light]
+export const HURICANE_KICK = [...QBC, Match.OneWithPrefix('kick:')]
 
 // summon suffering
 export const SS = [
@@ -87,6 +88,5 @@ export const SS = [
   DPAD.down,
   DPAD.down_forward,
   DPAD.down_backward,
-  ACTION.punch_light,
-  ACTION.guard,
+  Match.All(ACTION.punch_light, ACTION.guard),
 ]

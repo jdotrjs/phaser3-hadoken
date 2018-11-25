@@ -44,8 +44,8 @@ class Scene1 extends Phaser.Scene {
   }
 
   create() {
-    const dvorakMapper = Keyboard.NewSimpleMapper(Cfg.QWERTY_LAYOUT)
-    const qwertykMapper = Keyboard.NewSimpleMapper(Cfg.DVORAK_LAYOUT)
+    const dvorakMapper = Keyboard.NewSimpleMapper(Cfg.DVORAK_LAYOUT)
+    const qwertykMapper = Keyboard.NewSimpleMapper(Cfg.QWERTY_LAYOUT)
 
     this.hadoken = new Keyboard.KeyboardHadoken(this, {
       bufferLimitType: 'time',

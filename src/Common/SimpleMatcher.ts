@@ -1,10 +1,10 @@
 import { InputSnapshot, NewInputs } from 'ph/InputSnapshot'
 import { MatchFn, SemanticInput } from 'ph/Hadoken'
 
-type InputPredicate = (history: InputSnapshot[], curIdx: number) => boolean
-type InputCheck = SemanticInput | InputPredicate
+export type InputPredicate = (history: InputSnapshot[], curIdx: number) => boolean
+export type InputCheck = SemanticInput | InputPredicate
 
-function check(ck: InputCheck, history: InputSnapshot[], curIdx: number): boolean {
+function singleKeyCheck(ck: InputCheck, history: InputSnapshot[], curIdx: number): boolean {
   if (typeof ck === 'string') {
     const isLast = curIdx == 0
     const prev = isLast ? { timestamp: 0, state: {} } : history[curIdx - 1]
@@ -57,7 +57,7 @@ function simpleSubsetMatch(
   let prevInputTS = lastInputTS
 
   const results = []
-  if (!check(ck, history, historyIdx)) {
+  if (!singleKeyCheck(ck, history, historyIdx)) {
     return null
   }
   results.push(historyIdx)
@@ -77,7 +77,7 @@ function simpleSubsetMatch(
         break
       }
 
-      if (check(ck, history, historyIdx)) {
+      if (singleKeyCheck(ck, history, historyIdx)) {
         results.push(historyIdx)
         prevInputTS = thisInputTS
         break
