@@ -55,14 +55,16 @@ function controllerSync(ctx: HadokenData<GamepadHadokenConfig>) {
   const pad = cfg.gamepad
 
   cfg.buttonMap.forEach(def => {
-    const btn = pad.buttons[def.idx]
-    const pastThreshold = def.threshold && btn.value >= def.threshold
-    const pressed = btn.pressed && !def.threshold || pastThreshold
+    if (pad.buttons.length > def.idx) {
+      const btn = pad.buttons[def.idx]
+      const pastThreshold = def.threshold && btn.value >= def.threshold
+      const pressed = btn.pressed && !def.threshold || pastThreshold
 
-    if (pressed) {
-      MaybeAddKey(ctx, def.mapping, pad.timestamp)
-    } else {
-      MaybeRemoveKey(ctx, def.mapping)
+      if (pressed) {
+        MaybeAddKey(ctx, def.mapping, pad.timestamp)
+      } else {
+        MaybeRemoveKey(ctx, def.mapping)
+      }
     }
   })
 }
