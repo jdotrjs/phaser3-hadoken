@@ -60,8 +60,8 @@ Hadoken can be thought of as an interface between your game and how Phaser
 manages input. You tell it what an input "means" to your game + what sequence
 of inputs constitute a special move and Hadoken will tell you when those things
 happen. It's worth noting here that "input" can be anything. At launch time it
-ships with an understanding of how to read Keyboard input and should be getting
-gamepad support shortly.
+ships with an understanding of how to read Keyboard input and will be getting
+improved gamepad support shortly.
 
 The data flow for an input is:
 

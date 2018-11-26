@@ -80,6 +80,7 @@ export type MatchData = {
 export type HadokenData<T extends HadokenPipelineConfig> = {
   scene: Phaser.Scene,
   config: T,
+  sync: AdapterSyncFn<T> | null,
 
   emitter: Phaser.Events.EventEmitter,
   matchedMove: string | null,
@@ -89,13 +90,20 @@ export type HadokenData<T extends HadokenPipelineConfig> = {
   processedHistory: InputSnapshot[],
 }
 
+export type AdapterSyncFn<T extends HadokenPipelineConfig> =
+  (data: HadokenData<T>) => void
+
 // TODO: rewrite so that you can use multiple adapters per Hadoken
 export class Hadoken<T extends HadokenPipelineConfig> {
   hadokenData: HadokenData<T>
   emitter: Phaser.Events.EventEmitter
 
-  constructor(parent: Phaser.Scene, cfg: T) {
-    this.hadokenData = NewHadoken(parent, cfg)
+  constructor(
+    parent: Phaser.Scene,
+    cfg: T,
+    sync: AdapterSyncFn<T> | null = null,
+  ) {
+    this.hadokenData = NewHadoken(parent, cfg, sync)
     this.emitter = this.hadokenData.emitter
   }
 
@@ -123,10 +131,12 @@ export class Hadoken<T extends HadokenPipelineConfig> {
 export function NewHadoken<Cfg extends HadokenPipelineConfig>(
   scn: Phaser.Scene,
   cfg: Cfg,
+  sync: AdapterSyncFn<Cfg> | null,
 ): HadokenData<Cfg> {
   const state = {
     scene: scn,
     config: cfg,
+    sync,
     matchedMove: null,
     emitter: new Phaser.Events.EventEmitter(),
     isPaused: false,
@@ -187,6 +197,10 @@ function mkHadokenUpdate(ctx: HadokenData<HadokenPipelineConfig>): () => void {
   }
 
   return () => {
+    if (ctx.sync) {
+      ctx.sync(ctx)
+    }
+
     ctx.matchedMove = null
 
     // TODO: if raw history exceeds processed history be > 1 frame it suggests

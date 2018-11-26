@@ -1,6 +1,6 @@
-import { Events, MatchData } from 'ph/Hadoken'
-// TODO: index should resolve automatically...
-import * as Keyboard from 'ph/Keyboard/index'
+import { Events, Hadoken as HadokenBase, MatchData, HadokenPipelineConfig } from 'ph/Hadoken'
+import * as Keyboard from 'ph/Adapters/Keyboard'
+import * as Gamepad from 'ph/Adapters/Gamepad'
 import * as Filters from "ph/Common/Filters"
 import * as SimpleMatcher from 'ph/Common/SimpleMatcher'
 import * as Cfg from 'ph/ExampleConfig'
@@ -8,7 +8,11 @@ import * as Cfg from 'ph/ExampleConfig'
 class Scene1 extends Phaser.Scene {
   // --- The following three attributes are related to hadoken ---
   // reference to the hadoken library
-  hadoken: Keyboard.KeyboardHadoken
+  hadoken: HadokenBase<HadokenPipelineConfig> | null
+
+  // TODO: update docs now that I'm swapping between gamepads
+  gph: Gamepad.Hadoken | null
+  kbh: Keyboard.Hadoken | null
 
   // indicates which direction the character is facing (so that "forward"
   // means something reasonable)
@@ -35,6 +39,9 @@ class Scene1 extends Phaser.Scene {
     this.facing = 'right'
     this.keymap = 'qwerty'
     this.displayCount = 12
+    this.hadoken = null
+    this.kbh = null
+    this.gph = null
   }
 
   preload() {
@@ -44,10 +51,98 @@ class Scene1 extends Phaser.Scene {
   }
 
   create() {
+    this._constructUI()
+    this._connectKB()
+  }
+
+  _connectPad() {
+    if (this.kbh !== null) {
+      this.kbh.pause()
+    }
+
+    if (this.gph !== null) {
+      this.hadoken = this.gph
+      this.hadoken.resume()
+      return
+    }
+
+    const ch = this.cameras.main.height
+    const txt = this.add.text(
+      0,
+      ch / 2,
+      'Waiting for Gamepad',
+      { fontFamily: "Impact, ArialBlack", fontSize: 50, color: '#3300cc', align: 'center' },
+    )
+    txt.setX(this.cameras.main.width / 2 - txt.width / 2)
+    txt.setY(ch / 2 - txt.height / 2)
+
+    const tween = this.add.tween({
+      targets: txt,
+      alpha: .4,
+      duration: 500,
+      easy: 'Power2',
+      repeat: -1,
+      yoyo: -1,
+    })
+
+    const attach = (pad: Phaser.Input.Gamepad.Gamepad) => {
+      tween.stop()
+      txt.destroy()
+
+      this.gph = new Gamepad.Hadoken(this, {
+        bufferLimitType: 'time',
+        bufferLimit: 5000,
+        gamepad: pad,
+        buttonMap: Gamepad.Xbox360,
+        filters: Filters.NewChain(
+          // convert two directional inputs into a diagonal, if applicable
+          Filters.CoalesseInputs(Cfg.DPAD_COMBINATIONS),
+          // change formats from right/left to forward/backward based on the
+          // player's facing
+          Filters.MapToFacing(() => this.facing),
+          // only accept the most recent direction
+          Filters.OnlyMostRecent(Cfg.DIRECTIONS),
+          // and the most recent attack
+          Filters.OnlyMostRecent(Cfg.ATTACKS),
+        ),
+        // defines a set of moves to register
+        matchers: [
+          { name: 'hadoken', match: SimpleMatcher.New(Cfg.HADOKEN), },
+          { name: 'huricane_kick', match: SimpleMatcher.New(Cfg.HURICANE_KICK), },
+          {
+            name: 'summon_suffering',
+            match: SimpleMatcher.New(Cfg.SS, { stepDelay: 800, totalDelay: 6000 }),
+          }
+        ],
+      })
+
+      // hadoken will emit a match event when a move's input sequence is matched
+      this.gph.emitter.on(Events.Match, this._onMoveMatched, this)
+      this.hadoken = this.gph
+    }
+
+    if (this.input.gamepad.total > 0) {
+      attach(this.input.gamepad.pad1)
+    } else {
+      this.input.gamepad.once('connected', attach)
+    }
+  }
+
+  _connectKB() {
+    if (this.gph !== null) {
+      this.gph.pause()
+    }
+
+    if (this.kbh !== null) {
+      this.hadoken = this.kbh
+      this.hadoken.resume()
+      return
+    }
+
     const dvorakMapper = Keyboard.NewSimpleMapper(Cfg.DVORAK_LAYOUT)
     const qwertykMapper = Keyboard.NewSimpleMapper(Cfg.QWERTY_LAYOUT)
 
-    this.hadoken = new Keyboard.KeyboardHadoken(this, {
+    this.kbh = new Keyboard.Hadoken(this, {
       bufferLimitType: 'time',
       bufferLimit: 5000,
       keymapFn: code => this.keymap === 'dvorak'
@@ -76,9 +171,8 @@ class Scene1 extends Phaser.Scene {
     })
 
     // hadoken will emit a match event when a move's input sequence is matched
-    this.hadoken.emitter.on(Events.Match, this._onMoveMatched, this)
-
-    this._constructUI()
+    this.kbh.emitter.on(Events.Match, this._onMoveMatched, this)
+    this.hadoken = this.kbh
   }
 
   _constructUI() {
@@ -112,7 +206,7 @@ class Scene1 extends Phaser.Scene {
     const col2 = cw / 2
     const col3 = 2 /3 * cw
     this.controls.push(this.add.text(col1, 0, ' : A', txtCfg))
-    const row1 = this.controls[0].height
+    const row1 = this.controls[0].height / 2
     this.controls[0].setY(row1)
     const row2 = row1 +this.controls[0].height + 4
     this.controls.push(this.add.text(col1, row2, ' : S', txtCfg))
@@ -140,7 +234,7 @@ class Scene1 extends Phaser.Scene {
       0,
       ch / 3,
       data.name,
-      { fontFamily: "Impact, ArialBlack", fontSize: 74, color: '#3300cc', align: 'center' },
+      { fontFamily: "Impact, ArialBlack", fontSize: 64, color: '#3300cc', align: 'center' },
     )
 
     this.lastMatched = txt
@@ -156,11 +250,14 @@ class Scene1 extends Phaser.Scene {
       ease: 'Power2',
     })
 
-    const m = data.meta as {indicies: number[]}
-    m.indicies.forEach(idx => {
-      const state = this.hadoken.hadokenData.processedHistory[idx].state
-      console.log(`${idx} => [${Object.keys(state).join(', ')}]`)
-    })
+    if (this.hadoken !== null) {
+      const hData = this.hadoken.hadokenData
+      const m = data.meta as {indicies: number[]}
+      m.indicies.forEach(idx => {
+        const state = hData.processedHistory[idx].state
+        console.log(`  ${idx} => [${Object.keys(state).join(', ')}]`)
+      })
+    }
   }
 
   _drawInputHistory() {
@@ -179,7 +276,11 @@ class Scene1 extends Phaser.Scene {
       'kick:hard': 'kick_hard',
       'guard': 'guard',
     }
-    const history = this.hadoken.hadokenData.processedHistory.filter(h => Object.keys(h.state).length).slice(-1 * this.displayCount)
+
+    const history = this.hadoken !== null
+      ? this.hadoken.hadokenData.processedHistory.filter(h => Object.keys(h.state).length).slice(-1 * this.displayCount)
+      : []
+
     let i = 0
     for (; i < history.length; i++) {
       const state = history[i].state
@@ -218,9 +319,19 @@ class Scene1 extends Phaser.Scene {
     }
   }
 
+  switchInputTo(typ: string) {
+    if (typ === 'keyboard') {
+      this._connectKB()
+    }
+
+    if (typ === 'gamepad') {
+      this._connectPad()
+    }
+  }
+
   update() {
     this._drawInputHistory()
-    if (this.hadoken.hadokenData.matchedMove !== null) {
+    if (this.hadoken && this.hadoken.hadokenData.matchedMove !== null) {
       console.log(`matched: ${this.hadoken.hadokenData.matchedMove}`)
     }
   }
@@ -231,7 +342,7 @@ let phaserConfig = {
   parent: 'phaser-display',
   backgroundColor: '0x9a9a9a',
   width: 800,
-  height: 600,
+  height: 400,
   scene: [ Scene1 ],
   input: {
     gamepad: true,
@@ -252,9 +363,31 @@ export function selectKeymap(newmap: 'qwerty' | 'dvorak') {
   letters.forEach((l, i) => { scn.controls[i].setText(` : ${l}`) })
 
   const qwEle = <HTMLElement>document.getElementById('keymap-qwerty')
-  qwEle.className = 'selectable' + (nowQwerty ? ' selected_keymap' : '')
+  qwEle.className = 'selectable' + (nowQwerty ? ' selected' : '')
 
   const dvEle = <HTMLElement>document.getElementById('keymap-dvorak')
-  dvEle.className  = 'selectable' + (nowQwerty ? '' : ' selected_keymap')
+  dvEle.className  = 'selectable' + (nowQwerty ? '' : ' selected')
+}
 
+export function selectInput(typ: string) {
+  const scn = <Scene1>game.scene.getScene('scene1')
+  scn.switchInputTo(typ)
+
+  const nowKB = typ === 'keyboard'
+
+  const kbEle = <HTMLElement>document.getElementById('input-keyboard')
+  kbEle.className = 'selectable' + (nowKB ? ' selected' : '')
+
+  const gpEle = <HTMLElement>document.getElementById('input-gamepad')
+  gpEle.className = 'selectable' + (nowKB ? '' : ' selected')
+
+  const keymapEle = <HTMLElement>document.getElementById('keymap-select-section')
+  if (nowKB) {
+    keymapEle.style.display = 'block'
+    selectKeymap(scn.keymap)
+  } else {
+    const letters = ['A', 'B', 'X', 'Y', 'LB']
+    letters.forEach((l, i) => { scn.controls[i].setText(` : ${l}`) })
+    keymapEle.style.display = 'none'
+  }
 }

@@ -3,7 +3,7 @@
   SemanticInput,
   MaybeAddKey,
   MaybeRemoveKey,
-  Hadoken,
+  Hadoken as HadokenBase,
 } from 'ph/Hadoken'
 
 type MappingFn = (keycode: number) => SemanticInput | null
@@ -30,7 +30,7 @@ type HadokenKeyboardConfig = HadokenPipelineConfig & {
 /**
  * Hadoken implementation that supports keyboard input.
  */
-export class KeyboardHadoken extends Hadoken<HadokenKeyboardConfig> {
+export class Hadoken extends HadokenBase<HadokenKeyboardConfig> {
   constructor(scn: Phaser.Scene, cfg: HadokenKeyboardConfig) {
     super(scn, cfg)
 

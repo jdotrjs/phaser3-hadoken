@@ -7,8 +7,9 @@
 
     <link href="flexboxgrid.min.css" rel="stylesheet" type="text/css" >
     <style type="text/css">
-      .selected_keymap {
+      .selected {
         font-weight: bold;
+        text-decoration: underline;
       }
 
       .selectable {
@@ -32,11 +33,18 @@
 
       <div class='row center-xs' style="padding-bottom: 1em;">
         <div class='row col-xs-12 col-md-8 col-lg-6'>
-          <div class='start-xs'>
-            Select Keymap:
-              <span id="keymap-qwerty" onclick="Hadoken.selectKeymap('qwerty')" class="selectable selected_keymap">Qwerty</span> /
+          <div style='margin-bottom: 1em;' class='start-xs'>
+            <div>
+              Select Input:
+                <span id="input-keyboard" onclick="Hadoken.selectInput('keyboard')" class="selectable selected">Keyboard</span> /
+                <span id="input-gamepad" onclick="Hadoken.selectInput('gamepad')" class="selectable">Gamepad (XBox 360 keymap)</span>
+            </div>
+            <div id="keymap-select-section">
+              Select Keymap:
+              <span id="keymap-qwerty" onclick="Hadoken.selectKeymap('qwerty')" class="selectable selected">Qwerty</span> /
               <span id="keymap-dvorak" onclick="Hadoken.selectKeymap('dvorak')" class="selectable">Dvorak</span>
-          </div>
+            </div>
+          </span>
         </div>
       </div>
 
@@ -50,8 +58,8 @@
             <p>
               Demo move list:
               <ul>
-                <li>Hadoken: Down, Down+Forward, Forward, Light Punch</li>
-                <li>Huricane Kick: Down, Down+Backward, Forward, Light Kick</li>
+                <li>Hadoken: Down, Down+Forward, Forward, Punch</li>
+                <li>Huricane Kick: Down, Down+Backward, Forward, Kick</li>
                 <li>Summon Suffering: Down+Forward, Up+Backward, Forward, Down, Down+Forward, Down+Backward, Light Punch, Guard</li>
               </ul>
             </p>
