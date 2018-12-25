@@ -1,10 +1,17 @@
 import * as Filters from 'ph/Common/Filters'
 import * as Match from 'ph/Common/Matchers'
+import { ButtonMap } from 'ph/Adapters/Gamepad'
+import {
+  mkButtonInput,
+  mkStandardLeftStickInput,
+  mkBasicStickDpadMapper,
+} from 'ph/Common/Gamepad'
+import StandardButton from 'ph/Common/StandardButtons'
 
 const c = Phaser.Input.Keyboard.KeyCodes
 
 // This maps a keyboard key code to a named input
-const KeymapArrows = {
+export const KeymapArrows = {
   [c.DOWN]:  'down',
   [c.UP]:    'up',
   [c.RIGHT]: 'right',
@@ -52,10 +59,36 @@ export const DPAD = {
   up_backward:   'up+backward',
 }
 
-// what directions could be used to construct a move sequence
+// Absolute directions that an input can produce: [up, up+right, ...]
+export const ABSOLUTE_DIRECTIONS = [
+  'up', 'down', 'left', 'right',
+  ...Object.keys(DPAD_COMBINATIONS),
+]
+
+// what directions could be used to construct a move sequence:
+// [up, up+forward, ...]
 export const DIRECTIONS = Object.keys(DPAD).map(
   k => (<{[key:string]:string}>DPAD)[k]
 )
+
+// configures inputs for a gamepad
+export const GamepadInputs: ButtonMap = [
+  mkButtonInput(StandardButton.LeftDpad.Up, 'up'),
+  mkButtonInput(StandardButton.LeftDpad.Down, 'down'),
+  mkButtonInput(StandardButton.LeftDpad.Left, 'left'),
+  mkButtonInput(StandardButton.LeftDpad.Right, 'right'),
+  mkButtonInput(StandardButton.RightCluster.Down, 'punch:light'),
+  mkButtonInput(StandardButton.RightCluster.Right, 'punch:hard'),
+  mkButtonInput(StandardButton.RightCluster.Left, 'kick:light'),
+  mkButtonInput(StandardButton.RightCluster.Up, 'kick:hard'),
+  mkButtonInput(StandardButton.Right.Trigger, 'kick:light'),
+  mkButtonInput(StandardButton.Left.Shoulder, 'guard'),
+  mkStandardLeftStickInput(
+    'left-stick',
+    mkBasicStickDpadMapper(),
+    ABSOLUTE_DIRECTIONS,
+  ),
+]
 
 // All the non-movement actions a player could take as part of a move sequence
 export const ACTION = {

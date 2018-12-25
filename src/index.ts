@@ -2,6 +2,8 @@ import { Events, Hadoken as HadokenBase, MatchData, HadokenPipelineConfig } from
 import * as Keyboard from 'ph/Adapters/Keyboard'
 import * as Gamepad from 'ph/Adapters/Gamepad'
 import * as Filters from "ph/Common/Filters"
+import { isStandardMapping } from './Common/Gamepad';
+import * as KeyboardCommon from 'ph/Common/Keyboard'
 import * as SimpleMatcher from 'ph/Common/SimpleMatcher'
 import * as Cfg from 'ph/ExampleConfig'
 
@@ -53,6 +55,9 @@ class Scene1 extends Phaser.Scene {
   create() {
     this._constructUI()
     this._connectKB()
+    this.g = this.add.graphics()
+    this.g.lineStyle(3, 0xff0000)
+    this.at = this.add.text(20, 70, '')
   }
 
   _connectPad() {
@@ -89,11 +94,18 @@ class Scene1 extends Phaser.Scene {
       tween.stop()
       txt.destroy()
 
+      console.log(pad)
+      if (!isStandardMapping(pad)) {
+        alert('Gamepad + browser combination does not support standard mapping')
+        selectInput('keyboard')
+        return
+      }
+
       this.gph = new Gamepad.Hadoken(this, {
         bufferLimitType: 'time',
         bufferLimit: 5000,
         gamepad: pad,
-        buttonMap: Gamepad.Xbox360,
+        buttonMap: Cfg.GamepadInputs,
         filters: Filters.NewChain(
           // convert two directional inputs into a diagonal, if applicable
           Filters.CoalesseInputs(Cfg.DPAD_COMBINATIONS),
@@ -139,8 +151,8 @@ class Scene1 extends Phaser.Scene {
       return
     }
 
-    const dvorakMapper = Keyboard.NewSimpleMapper(Cfg.DVORAK_LAYOUT)
-    const qwertykMapper = Keyboard.NewSimpleMapper(Cfg.QWERTY_LAYOUT)
+    const dvorakMapper = KeyboardCommon.NewSimpleMapper(Cfg.DVORAK_LAYOUT)
+    const qwertykMapper = KeyboardCommon.NewSimpleMapper(Cfg.QWERTY_LAYOUT)
 
     this.kbh = new Keyboard.Hadoken(this, {
       bufferLimitType: 'time',
@@ -174,6 +186,9 @@ class Scene1 extends Phaser.Scene {
     this.kbh.emitter.on(Events.Match, this._onMoveMatched, this)
     this.hadoken = this.kbh
   }
+
+  g: Phaser.GameObjects.Graphics
+  at: Phaser.GameObjects.Text
 
   _constructUI() {
     const ch = this.cameras.main.height
@@ -275,6 +290,23 @@ class Scene1 extends Phaser.Scene {
       'kick:light': 'kick',
       'kick:hard': 'kick_hard',
       'guard': 'guard',
+    }
+
+    this.at.setText('')
+    if (this.g) { this.g.clear() }
+    if (this.g && this.hadoken instanceof Gamepad.Hadoken) {
+      this.g.lineStyle(2, 0xff0000, 1)
+      this.g.strokeCircle(40, 40, 25)
+      const stickData = this.hadoken.analogData.stick
+      const { angle, value } = stickData['left-stick'] || { angle: 0, value: 0 }
+      const angleRad = angle / 57.295827
+
+      const x2 = (value * 25) * Math.cos(angleRad) + 40
+      const y2 = (value * 25) * Math.sin(angleRad) + 40
+
+      this.g.lineStyle(2, 0xff0000, 1)
+      this.g.strokeLineShape(new Phaser.Geom.Line(40, 40, x2, y2))
+      this.at.setText(`${angle}\n${value}`)
     }
 
     const history = this.hadoken !== null
@@ -386,7 +418,7 @@ export function selectInput(typ: string) {
     keymapEle.style.display = 'block'
     selectKeymap(scn.keymap)
   } else {
-    const letters = ['A', 'B', 'X', 'Y', 'LB']
+    const letters = ['A', 'B', 'X', 'Y', 'LS']
     letters.forEach((l, i) => { scn.controls[i].setText(` : ${l}`) })
     keymapEle.style.display = 'none'
   }

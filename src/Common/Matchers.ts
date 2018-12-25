@@ -19,7 +19,6 @@ export function NoneWithPrefix(n: string): InputPredicate {
 
 // Ensure that all the provided matches return true
 export function All(...matchers: InputCheck[]): InputPredicate {
-  console.log(`creating All matcher with: [${matchers.join(', ')}]`)
   return (input: InputSnapshot[], idx: number): boolean =>
     matchers.reduce(
       (acc, cur) => {

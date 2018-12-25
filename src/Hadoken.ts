@@ -3,6 +3,7 @@ import {
   NewInputs,
   RemovedInputs,
   HasSameKeys,
+  NewestTimestamp,
 } from './InputSnapshot'
 
 import { FilterFn } from 'ph/Common/Filters'
@@ -254,12 +255,12 @@ function maybeCullHistory(ctx: HadokenData<HadokenPipelineConfig>) {
   }
 }
 
-/**
- * Adds a key to the hadoken context with some timestamp if it was not already
- * considered pressed. If the key had already been added and not removed then
- * no change is made.
- */
-export function MaybeAddKey(ctx: HadokenData<HadokenPipelineConfig>, key: SemanticInput, ts: number) {
+export function MaybeBatchUpdate(
+  ctx: HadokenData<HadokenPipelineConfig>,
+  keysAdded: SemanticInput[],
+  keysRemoved: SemanticInput[],
+  ts: number,
+) {
   if (ctx.isPaused) {
     return
   }
@@ -272,17 +273,35 @@ export function MaybeAddKey(ctx: HadokenData<HadokenPipelineConfig>, key: Semant
     ? ctx.rawHistory.slice(-1)[0]
     : { timestamp: now - 1, state: {} }
 
-  const newSnapshot = {
-    timestamp: now,
-    state: {
-      [key]: { pressed: ts },
-      ...lastState.state,
+  const newSnapshot: InputSnapshot = keysAdded.reduce(
+    (acc, cur) => ({
+      timestamp: acc.timestamp,
+      state: {
+        [cur]: { pressed: ts },
+        ...acc.state,
+      }
+    }),
+    { timestamp: now, state: { ...lastState.state } },
+  )
+  keysRemoved.forEach(k => {
+    // if another source adds a key then go ahead and let that preempt removal
+    if (keysAdded.indexOf(k) === -1) {
+      delete newSnapshot.state[k]
     }
-  }
+  })
 
   if (!HasSameKeys(newSnapshot, lastState)) {
     ctx.rawHistory.push(newSnapshot)
   }
+}
+
+/**
+ * Adds a key to the hadoken context with some timestamp if it was not already
+ * considered pressed. If the key had already been added and not removed then
+ * no change is made.
+ */
+export function MaybeAddKey(ctx: HadokenData<HadokenPipelineConfig>, key: SemanticInput, ts: number) {
+  MaybeBatchUpdate(ctx, [key], [], ts)
 }
 
 /**
@@ -291,27 +310,7 @@ export function MaybeAddKey(ctx: HadokenData<HadokenPipelineConfig>, key: Semant
  * no change will be made.
  */
 export function MaybeRemoveKey(ctx: HadokenData<HadokenPipelineConfig>, key: SemanticInput) {
-  if (ctx.isPaused) {
-
-    return
-  }
-
-  const hasHistory = ctx.rawHistory.length > 0
-  if (!hasHistory) {
-    return
-  }
-
-  const lastSnapshot = ctx.rawHistory.slice(-1)[0]
-  const state = { ...lastSnapshot.state }
-  delete state[key]
-
-  if (!HasSameKeys(lastSnapshot, state)) {
-    const newState: InputSnapshot = {
-      timestamp: Date.now(),
-      state,
-    }
-    ctx.rawHistory.push(newState)
-  }
+  MaybeBatchUpdate(ctx, [], [key], Date.now())
 }
 
 export function HadokenPause(data: HadokenData<HadokenPipelineConfig>) {
