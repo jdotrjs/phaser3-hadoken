@@ -3,7 +3,6 @@ import {
   NewInputs,
   RemovedInputs,
   HasSameKeys,
-  NewestTimestamp,
 } from './InputSnapshot'
 
 import { FilterFn } from 'ph/Common/Filters'
@@ -61,10 +60,14 @@ export const Events = {
   // InputReleased: 'inputreleased',
 }
 
+
 export type InputUpdateData = {
   // The inputs that were added relative to the last frame
   add: SemanticInput[],
-
+  
+  // TODO: add boolean indicating if it was initial press (or add as specific
+  // event that gets emitted)
+  
   // the inputs that were removed relative to the last frame
   remove: SemanticInput[],
 }
@@ -255,6 +258,9 @@ function maybeCullHistory(ctx: HadokenData<HadokenPipelineConfig>) {
   }
 }
 
+/**
+ * TODO
+ */
 export function MaybeBatchUpdate(
   ctx: HadokenData<HadokenPipelineConfig>,
   keysAdded: SemanticInput[],

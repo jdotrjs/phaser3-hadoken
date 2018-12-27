@@ -4,6 +4,7 @@
     <meta charset="utf-8"/>
     <script type="text/javascript" src="phaser.min.js"></script>
     <script type="text/javascript" src="../dist/hadoken.js"></script>
+    <script type="text/javascript" src="./dist/example.js"></script>
 
     <link href="flexboxgrid.min.css" rel="stylesheet" type="text/css" >
     <style type="text/css">
@@ -36,13 +37,13 @@
           <div style='margin-bottom: 1em;' class='start-xs'>
             <div>
               Select Input:
-                <span id="input-keyboard" onclick="Hadoken.selectInput('keyboard')" class="selectable selected">Keyboard</span> /
-                <span id="input-gamepad" onclick="Hadoken.selectInput('gamepad')" class="selectable">Gamepad</span>
+                <span id="input-keyboard" onclick="HadokenExample.selectInput('keyboard')" class="selectable selected">Keyboard</span> /
+                <span id="input-gamepad" onclick="HadokenExample.selectInput('gamepad')" class="selectable">Gamepad</span>
             </div>
             <div id="keymap-select-section">
               Select Keymap:
-              <span id="keymap-qwerty" onclick="Hadoken.selectKeymap('qwerty')" class="selectable selected">Qwerty</span> /
-              <span id="keymap-dvorak" onclick="Hadoken.selectKeymap('dvorak')" class="selectable">Dvorak</span>
+              <span id="keymap-qwerty" onclick="HadokenExample.selectKeymap('qwerty')" class="selectable selected">Qwerty</span> /
+              <span id="keymap-dvorak" onclick="HadokenExample.selectKeymap('dvorak')" class="selectable">Dvorak</span>
             </div>
           </div>
         </div>

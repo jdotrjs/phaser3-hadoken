@@ -30,6 +30,7 @@
   "scripts": {
     "build": "webpack --mode development",
     "build:prod": "webpack --mode production",
+    "build:example": "webpack --mode development --config ./example/webpack.config.js",
     "build:watch": "webpack --watch --mode development",
     "lint": "eslint src/**.js",
     "lint:fix": "eslint src/**.js --fix"

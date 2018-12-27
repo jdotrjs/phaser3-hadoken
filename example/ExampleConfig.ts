@@ -1,12 +1,15 @@
-import * as Filters from 'ph/Common/Filters'
-import * as Match from 'ph/Common/Matchers'
-import { ButtonMap } from 'ph/Adapters/Gamepad'
-import {
+import Phaser from 'phaser'
+import Hadoken from 'hadoken'
+
+const common = Hadoken.Common
+const Filters = common.Filters
+const {
   mkButtonInput,
   mkStandardLeftStickInput,
   mkBasicStickDpadMapper,
-} from 'ph/Common/Gamepad'
-import StandardButton from 'ph/Common/StandardButtons'
+} = common.Gamepad
+const Match = common.Matchers
+const StandardButton = common.StandardButton
 
 const c = Phaser.Input.Keyboard.KeyCodes
 
