@@ -43,6 +43,12 @@ phaser3-hadoken repo> yarn run:demo
 
 ## Caveats
 
+The most important note is that if your browser doesn't automatically remap
+your controller into the [standard gamepad][mdn-std-pad] the demo won't work
+with your controller. This is a result of me not wanting to write a generalized
+"map your controller buttons to an action" deal and not a limitation of Hadoken
+or Phaser.
+
 The demo was originally built along side the base project in typescript. As I
 started to pull it out I hit the fact that I don't have a typedef file set up
 yet so the `index.js` doesn't type check for now :sob:.
@@ -53,3 +59,4 @@ rewrote it as an ES6 js file and left `__ExampleConfig.ts` around to preserve
 type data for when I come back to fix this (in the future, eventually, maybe?)
 
 [demo-url]: https://jdotrjs.github.io/demos/phaser3-hadoken/
+[mdn-std-pad]: https://w3c.github.io/gamepad/#remapping
