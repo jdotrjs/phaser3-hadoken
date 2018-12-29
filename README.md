@@ -16,8 +16,10 @@
 
 ## Demo
 
-A WIP library to match fighting-game style move sequencess. A [live demo][demo] is
-available and a gif is too:
+A super compact (13k minimized, 55k with source map!) library to match fighting
+game style move sequences and generally help map user input into your game.
+
+A [live demo][demo] is available and a gif is too:
 
 ![Hadoken demo gif](https://raw.githubusercontent.com/jdotrjs/phaser3-hadoken/master/README/hadoken_demo.gif)
 
@@ -32,7 +34,7 @@ script tag:
 ```html
 <script
   type="text/javascript"
-  src="https://github.com/jdotrjs/phaser3-hadoken/releases/download/v0.1.0/hadoken.js"
+  src="https://github.com/jdotrjs/phaser3-hadoken/releases/download/v0.1.0/hadoken.min.js"
 ></script>
 ```
 
@@ -44,7 +46,21 @@ I use this approach in the demo. The source is included, see the
 
 ## Get it: `npm` and `yarn`
 
-TODO
+[![npm](https://img.shields.io/npm/dt/phaser3-hadoken.svg)][npmjs]
+
+This library is published under [phaser3-hadoken][npmjs] and can be added to
+your project via:
+
+```bash
+# npm
+npm install phaser3-hadoken --save
+
+# yarn:
+yarn add phaser3-hadoken
+yarn install
+```
+
+[npmjs]: https://www.npmjs.com/package/phaser3-hadoken
 
 ## Using Hadoken
 
@@ -60,8 +76,14 @@ Hadoken can be thought of as an interface between your game and how Phaser
 manages input. You tell it what an input "means" to your game + what sequence
 of inputs constitute a special move and Hadoken will tell you when those things
 happen. It's worth noting here that "input" can be anything. At launch time it
-ships with an understanding of how to read Keyboard input and will be getting
-improved gamepad support shortly.
+ships with an understanding of how to read Keyboard and Gamepad input.
+
+> _Terminology_: For better or worse I refer to things that your game cares
+> about as "Semantic Input" pretty much throughout this doc and in many places
+> within the codebase. I do this because it's makes a clear separation between
+> "something happened on a controller" and "something the game cares about."
+> This approcah is useful if you wish to support multiple inputs but only deal
+> with understanding the difference in a single part of your codebase.
 
 The data flow for an input is:
 
@@ -81,7 +103,7 @@ The data flow for an input is:
   to clean up after ounselves to limit memory usage.
 
 So, if that's how Hadoken works how does it inform your game that
-_things are happening_? Take your pick:
+_things are happening_? Well, take your pick:
 
 1. Whenever a move is matched a `Hadoken.Events.Match` is emitted and carries
    with it a `Hadoken.MatchData`. You can listen for these on `hadokenObj.emitter`.
@@ -90,6 +112,15 @@ _things are happening_? Take your pick:
    so `matchedMove` will only be set for one frame. That means you can do a
    simple `if (hadokenObj.matchedMove !== null) { ... }` or the like to check
    for move matching.
+
+Additionally, if you care about specific inputs and not move matching you have
+a few other options
+
+1. For a point-in-time check you can called `hadokenObj.pressed()` for mapped
+   inputs or, often, adapter specific methods for exposing data;
+2. input begin and end events are also emitted from `hadokenObj.emitter`. They
+   are a `Hadoken.Events.InputUpdate` with a data argument of type
+   `Hadoken.InputUpdateData`.
 
 ### Details and Examples
 
@@ -228,7 +259,7 @@ Some common filter usage is:
 - `Filters.OnlyMostRecent` &mdash; only the most recent of a set of inputs
   is considered pressed.
 
-[demo-src-facing]: TODO
+[demo-src-facing]: https://github.com/jdotrjs/phaser3-hadoken/blob/master/example/ExampleConfig.js#L131
 
 #### Matchers
 
@@ -244,9 +275,9 @@ export type MatchFn = (history: InputSnapshot[]) => [boolean, object | null]
 export type MoveDef = { name: string, match: MatchFn }
 
 // And, finally, from the Hadoken config:
-  // list of matchers that will be run in priority order, the first matcher
-  // that returns true will result stop matching process
-  matchers?: MoveDef[],
+// list of matchers that will be run in priority order, the first matcher
+// that returns true will result stop matching process
+matchers?: MoveDef[],
 ```
 
 So, basically, we can just give the Hadoken config a list of objects that pair
@@ -378,9 +409,10 @@ game, be creative.
 
 ## Sample project
 
-The sample project is currently live on [the demo site][demo] site. I need to
-break the code out of the library and once that happens this section will link
-to docs on how that project works.
+The sample project is currently live on [the demo site][demo] site. The source
+[is available][demo-src] with it's owmn README.
+
+[demo-src]: https://github.com/jdotrjs/phaser3-hadoken/blob/master/example/
 
 ## License
 ![CC BY-NC](https://licensebuttons.net/l/by-nc/3.0/88x31.png)

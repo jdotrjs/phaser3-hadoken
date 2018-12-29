@@ -54,10 +54,6 @@ export const Events = {
   // Emited when a move is matched against the recent input buffer. When Match
   // is emited it will be paired with data of type MatchData.
   Match: 'match',
-
-  // TODO: implement this
-  // InputPressed: 'inputpressed',
-  // InputReleased: 'inputreleased',
 }
 
 

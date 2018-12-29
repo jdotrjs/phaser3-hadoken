@@ -1,5 +1,5 @@
 import { SemanticInput } from 'ph/Hadoken'
-import { MappingFn } from 'ph/Adapters/Keyboard'
+import { MappingFn } from 'ph/Adapters/PhaserKeyboard'
 
 /**
  * Constructs a simple translation function between a keyboard input keycode

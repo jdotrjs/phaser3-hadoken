@@ -4,7 +4,7 @@ import Hadoken from 'hadoken'
 import * as Cfg from './ExampleConfig'
 
 const Events = Hadoken.Base.Events
-const { Gamepad, Keyboard } = Hadoken.Adapters
+const { Gamepad, PhaserKeyboard } = Hadoken.Adapters
 const common = Hadoken.Common.default
 const isStandardMapping = common.Gamepad.isStandardMapping
 
@@ -17,7 +17,7 @@ class DemoScene extends Phaser.Scene {
   // switching between inputs. If it hasn't been created yet the variable
   // will be null.
   gph: Gamepad.Hadoken | null
-  kbh: Keyboard.Hadoken | null
+  kbh: PhaserKeyboard.Hadoken | null
 
   // indicates which direction the character is facing (so that "forward"
   // means something reasonable)
@@ -144,7 +144,7 @@ class DemoScene extends Phaser.Scene {
       return
     }
 
-    this.kbh = new Keyboard.Hadoken(this, Cfg.mkKeyboardHadokenConfig(() => this.facing, () => this.keymap))
+    this.kbh = new PhaserKeyboard.Hadoken(this, Cfg.mkKeyboardHadokenConfig(() => this.facing, () => this.keymap))
 
     // hadoken will emit a match event when a move's input sequence is matched
     this.kbh.emitter.on(Events.Match, this._onMoveMatched, this)
