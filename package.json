@@ -1,13 +1,13 @@
 {
   "name": "phaser3-hadoken",
   "description": "An input manager library that supports easy fighting-game style input events for Phaser 3.",
-  "version": "0.1.0r1",
+  "version": "0.1.0-r2",
   "main": "./dist/hadoken.min.js",
   "repository": {
     "type": "git",
     "url": "git@github.com:jdotrjs/phaser3-hadoken.git"
   },
-  "homepage": "https://jdotrjs.github.io/demos/hadoken",
+  "homepage": "https://jdotrjs.github.io/demos/phaser3-hadoken",
   "bugs": {
     "url": "https://github.com/jdotrjs/phaser3-hadoken/issues"
   },
