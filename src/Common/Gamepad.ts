@@ -26,10 +26,10 @@ export const isStandardMapping = (
 /**
  * Produces a definition for one of the buttons on the controller.
  *
- * @param idx {number} The index in the button array that should be mapped to
+ * @param {number} idx The index in the button array that should be mapped to
  *   some input; standard button mappings can be found in StandardButton and
  *   related objects.
- * @param mapping {string} what does this button mean
+ * @param {string} mapping what does this button mean
  */
 export const mkButtonInput = (
   idx: number,
@@ -44,13 +44,13 @@ export const mkButtonInput = (
  * This creates a config object for a a trigger button. Does no validation that
  * the button passed in is likely to actually be a trigger.
  *
- * @param idx {number} the index in the controller's button array that should
+ * @param {number} idx the index in the controller's button array that should
  *   be mapped to some input; standard indices can be found in StandardButton
  *   and related objects.
- * @param name {string} the name of this trigger; used to expose the raw value
+ * @param {string} name the name of this trigger; used to expose the raw value
  *   in the AnalogContainer
- * @param triggerMapper {TriggerMapper} maps from an 0->1 value into some input
- * @param allMapped {string[]} all possible values that triggerMapper may
+ * @param {Triggermapper} triggerMapper maps from an 0->1 value into some input
+ * @param {string[]} allMapped all possible values that triggerMapper may
  *   produce
  */
 export const mkTriggerInput = (
@@ -82,13 +82,13 @@ export const mkStandardRightStickInput = (
  * This produces a definition for one of the two (left/right) 2-axis joysticks
  * available on the "standard" gamepad. For more information see MDN at
  * https://w3c.github.io/gamepad/#remapping
- * @param name {string} the name of this stick, used to expose processed
+ * @param {string} name the name of this stick, used to expose processed
  *   snapshot data in the AnalogContainer
- * @param stick {'left'|'right'} which stick on the "standard controller"
+ * @param { 'left' | 'right' } stick which stick on the "standard controller"
  *   we're providing a specification for
- * @param angleMapper {StickMapper} maps from a stick angle+magnitude into
+ * @param {StickMapper} angleMapper maps from a stick angle+magnitude into
  *   some input
- * @param allMapped {string[]} all possible inputs that could be mapped from
+ * @param {string[]} allMapped all possible inputs that could be mapped from
  *   angleMapper
  * @returns {StickDef} a complete definition of a Hadoken Gamepad stick input
  */
@@ -109,15 +109,15 @@ export const mkStandardStickInput = (
 }
 
 /**
- * @param name {string} the name of this stick, used to expose processed
+ * @param {string} name the name of this stick, used to expose processed
  *   snapshot data in the AnalogContainer
- * @param horizIdx {number} index of the horizontal axis
- * @param right {1|-1} is a "right" position indicated by 1 or -1
- * @param vertIdx {number} index of the vertical axis
- * @param up {1|-1} is an "up" position indicated by 1 or -1
- * @param angleMapper {StickMapper} maps from a stick angle+magnitude into
+ * @param {number} horizIdx index of the horizontal axis
+ * @param {1|-1} right is a "right" position indicated by 1 or -1
+ * @param {number} vertIdx index of the vertical axis
+ * @param {1|-1} up is an "up" position indicated by 1 or -1
+ * @param {StickMapper} angleMapper maps from a stick angle+magnitude into
  *   some input
- * @param allMapped {string[]} all possible inputs that could be mapped from
+ * @param {string[]} allMapped all possible inputs that could be mapped from
  *   angleMapper
  * @returns {StickDef} a complete definition of a Hadoken Gamepad stick input
  */
@@ -153,9 +153,9 @@ export const mkStickInput = (
  *   90°  -> down
  *   220° -> up+lift
  *
- * @param threshold {number} how far does the stick need to be pushed before it
+ * @param {number} threshold how far does the stick need to be pushed before it
  *   registeres as moving in that direction.
- * @param prefix {string} if set this causes all inputs to be prefixed with this
+ * @param {string} prefix if set this causes all inputs to be prefixed with this
  *   argument
  */
 export const mkBasicStickDpadMapper = (

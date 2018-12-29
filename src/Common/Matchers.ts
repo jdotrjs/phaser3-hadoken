@@ -1,4 +1,4 @@
-import { InputSnapshot, InputState, NewInputs, HasKey } from 'ph/InputSnapshot'
+import { InputSnapshot, HasKey } from 'ph/InputSnapshot'
 import { InputCheck, InputPredicate } from 'ph/Common/SimpleMatcher'
 
 // Checks to see of there is exactly one input with a given prefix

@@ -11,10 +11,13 @@
       "./node_modules/@types",
       "./typings",
     ],
-    "types": ["lodash"],
     "baseUrl": ".",
     "paths": {
       "ph/*": ["./src/*"],
     },
   },
+  "exclude": [
+    "node_modules",
+    "example/**",
+  ],
 }

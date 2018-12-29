@@ -88,8 +88,8 @@ export function OnlyMostRecent(inputs: SemanticInput[]): FilterFn {
  * provided function  that returns whether the character in facing right
  * or left.
  *
- * @param getFacing A function that returns which direction (right or left)
- * should be considered "forward"
+ * @param {() => 'right' | 'left'} getFacing A function that returns which
+ *   direction (right or left) should be considered "forward"
  */
 export function MapToFacing(getFacing: () => 'right' | 'left'): FilterFn {
   return function (input: InputSnapshot): InputSnapshot {

@@ -1,12 +1,17 @@
-import * as Filters from 'ph/Common/Filters'
-import * as Match from 'ph/Common/Matchers'
-import { ButtonMap } from 'ph/Adapters/Gamepad'
-import {
+import Phaser from 'phaser'
+import Hadoken from 'hadoken'
+
+const common = Hadoken.Common.default
+const Filters = common.Filters
+const {
   mkButtonInput,
   mkStandardLeftStickInput,
   mkBasicStickDpadMapper,
-} from 'ph/Common/Gamepad'
-import StandardButton from 'ph/Common/StandardButtons'
+} = common.Gamepad
+const Match = common.Matchers
+const SimpleMatcher = common.SimpleMatcher
+const StandardButtons = common.StandardButtons.default
+const KeyboardCommon = common.Keyboard
 
 const c = Phaser.Input.Keyboard.KeyCodes
 
@@ -40,7 +45,7 @@ export const QWERTY_LAYOUT = { ...KeymapArrows, ...KeymapQwerty }
 export const DVORAK_LAYOUT = { ...KeymapArrows, ...KeymapDvorak }
 
 // This specifies how a set of combined inputs get constructed
-export const DPAD_COMBINATIONS: Filters.CoalesseMapping = {
+export const DPAD_COMBINATIONS = {
   'down+left':  ['down', 'left' ],
   'down+right': ['down', 'right'],
   'up+left':    ['up',   'left' ],
@@ -67,22 +72,20 @@ export const ABSOLUTE_DIRECTIONS = [
 
 // what directions could be used to construct a move sequence:
 // [up, up+forward, ...]
-export const DIRECTIONS = Object.keys(DPAD).map(
-  k => (<{[key:string]:string}>DPAD)[k]
-)
+export const DIRECTIONS = Object.keys(DPAD).map(k => DPAD[k])
 
 // configures inputs for a gamepad
-export const GamepadInputs: ButtonMap = [
-  mkButtonInput(StandardButton.LeftDpad.Up, 'up'),
-  mkButtonInput(StandardButton.LeftDpad.Down, 'down'),
-  mkButtonInput(StandardButton.LeftDpad.Left, 'left'),
-  mkButtonInput(StandardButton.LeftDpad.Right, 'right'),
-  mkButtonInput(StandardButton.RightCluster.Down, 'punch:light'),
-  mkButtonInput(StandardButton.RightCluster.Right, 'punch:hard'),
-  mkButtonInput(StandardButton.RightCluster.Left, 'kick:light'),
-  mkButtonInput(StandardButton.RightCluster.Up, 'kick:hard'),
-  mkButtonInput(StandardButton.Right.Trigger, 'kick:light'),
-  mkButtonInput(StandardButton.Left.Shoulder, 'guard'),
+export const GamepadInputs = [
+  mkButtonInput(StandardButtons.LeftDpad.Up, 'up'),
+  mkButtonInput(StandardButtons.LeftDpad.Down, 'down'),
+  mkButtonInput(StandardButtons.LeftDpad.Left, 'left'),
+  mkButtonInput(StandardButtons.LeftDpad.Right, 'right'),
+  mkButtonInput(StandardButtons.RightCluster.Down, 'punch:light'),
+  mkButtonInput(StandardButtons.RightCluster.Right, 'punch:hard'),
+  mkButtonInput(StandardButtons.RightCluster.Left, 'kick:light'),
+  mkButtonInput(StandardButtons.RightCluster.Up, 'kick:hard'),
+  mkButtonInput(StandardButtons.Right.Trigger, 'kick:light'),
+  mkButtonInput(StandardButtons.Left.Shoulder, 'guard'),
   mkStandardLeftStickInput(
     'left-stick',
     mkBasicStickDpadMapper(),
@@ -123,3 +126,50 @@ export const SS = [
   DPAD.down_backward,
   Match.All(ACTION.punch_light, ACTION.guard),
 ]
+
+// This is shared between both keyboard and gamepad hadokens
+const mkCommonHadokenConfig = (getFacing) => ({
+  bufferLimitType: 'time',
+  bufferLimit: 5000,
+
+  // the following functions will be applied to inputs before trying to match
+  filters: Filters.NewChain(
+    // convert two directional inputs into a diagonal, if applicable
+    Filters.CoalesseInputs(DPAD_COMBINATIONS),
+    // change formats from right/left to forward/backward based on the
+    // player's facing
+    Filters.MapToFacing(getFacing),
+    // only accept the most recent direction
+    Filters.OnlyMostRecent(DIRECTIONS),
+    // and the most recent attack
+    Filters.OnlyMostRecent(ATTACKS),
+  ),
+
+  // defines a set of moves to register (and how that match should happen)
+  matchers: [
+    { name: 'hadoken', match: SimpleMatcher.New(HADOKEN), },
+    { name: 'huricane_kick', match: SimpleMatcher.New(HURICANE_KICK), },
+    {
+      name: 'summon_suffering',
+      match: SimpleMatcher.New(SS, { stepDelay: 800, totalDelay: 6000 }),
+    }
+  ],
+})
+
+// the two controller variations
+
+export const mkGamepadHadokenConfig = (getFacing, pad) => ({
+  ...mkCommonHadokenConfig(getFacing),
+  gamepad: pad,
+  buttonMap: GamepadInputs,
+})
+
+const dvorakMapper = KeyboardCommon.NewSimpleMapper(DVORAK_LAYOUT)
+const qwertykMapper = KeyboardCommon.NewSimpleMapper(QWERTY_LAYOUT)
+
+export const mkKeyboardHadokenConfig = (getFacing, getLayout) => ({
+  ...mkCommonHadokenConfig(getFacing),
+  keymapFn: code => getLayout() === 'dvorak'
+    ? dvorakMapper(code)
+    : qwertykMapper(code),
+})

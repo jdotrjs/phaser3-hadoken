@@ -1,7 +1,4 @@
-// TODO: rewrite for reduced dist size
-import { difference } from 'lodash'
-
-import { SemanticInput } from "./Hadoken"
+import { SemanticInput } from './Hadoken'
 
 export type InputData = {
   pressed: number,
@@ -57,21 +54,24 @@ export function HasSameKeys(
   )
 }
 
-export function NewestTimestamp(ss: InputSnapshot): number {
-  return Object.keys(ss.state).reduce((ts, key) => {
-    if (ts > ss.state[key].pressed) {
-      return ts
-    } else {
-      return ss.state[key].pressed
-    }
-  }, 0)
-}
-
 export function NewInputSnapshot(): InputSnapshot {
   return {
     timestamp: Date.now(),
     state: {},
   }
+}
+
+// Check `ary` to find which elements are not represented in `vals`
+function difference(ary: string[], vals: string[]): string[] {
+  const valMap: { [key: string]: boolean } =
+    vals.reduce((acc, cur) => ({ ...acc, [cur]: true }), {})
+
+  const retMap = ary.reduce(
+    (acc, cur) => !valMap[cur] ? { ...acc, [cur]: true } : acc,
+    {},
+  )
+
+  return Object.keys(retMap)
 }
 
 export function NewInputs(oldSS: InputSnapshot, newSS: InputSnapshot): SemanticInput[] {

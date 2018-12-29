@@ -33,9 +33,16 @@ const simpleSubsetMatchOptionsDefault = {
 /**
  * Checks if a sequence exists within some historic snapshot.
  *
- * @param history An array of input states ordered oldest-to-newest
- * @param sequence An array of inputs that composes a move sequence; ordered last to first
- * @returns indexes of the sequence match if one is found, null otherwise
+ * @param {InputSnapshot[]} history An array of input states ordered oldest to
+ *   newest
+ * @param {InputCheck[]} sequence An array of inputs that composes a move
+ *   sequence; ordered last to first
+ * @param {number} options.stepDelay How much time can pass between each step
+ *   of the move sequence
+ * @param {number} options.totalDelay How much time can pass between the first
+ *   and last input of the move sequence
+ * @returns {number[] | null} indexes of the sequence match if one is found,
+ *   null if no match was found
  */
 function simpleSubsetMatch(
   history: InputSnapshot[],

@@ -1,7 +1,6 @@
 const path = require('path')
-const webpack = require('webpack')
 
-const main = './src/index.ts'
+const main = path.resolve(__dirname, './index.ts')
 
 const sourcePaths = [main]
 
@@ -13,20 +12,28 @@ module.exports = (env, argv) => {
 
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: argv.mode === 'development' ? 'hadoken.js' : 'hadoken.min.js',
+      filename: argv.mode === 'development' ? 'example.js' : 'example.min.js',
       libraryTarget: 'umd',
-      library: 'Hadoken',
+      library: 'HadokenExample',
     },
 
     externals: {
-      phaser : {
+      phaser: {
         umd: 'phaser',
         commonjs2: 'phaser',
         commonjs: 'phaser',
         amd: 'phaser',
         // indicates global variable should be used
         root: 'Phaser'
-      }
+      },
+      hadoken: {
+        umd: 'hadoken',
+        commonjs2: 'hadoken',
+        commonjs: 'hadoken',
+        amd: 'hadoken',
+        // indicates global variable should be used
+        root: 'Hadoken'
+      },
     },
 
     module: {
@@ -35,12 +42,14 @@ module.exports = (env, argv) => {
           test: /\.ts$/,
           exclude: [
             /node_modules/,
-            /src\/example/,
           ],
           use: {
             loader: 'ts-loader',
             options: {
-              transpileOnly: argv.mode === 'development',
+              // Sigh. Ideally this would be argv.mode === 'development' but
+              // I'm having some problems with the combination of webpack and
+              // laziness. For now the example won't be type checked :sob:
+              transpileOnly: true,
             },
           }
         },
@@ -53,12 +62,5 @@ module.exports = (env, argv) => {
         },
       ],
     },
-
-    resolve: {
-      alias: {
-        ph: path.resolve(__dirname, 'src'),
-      },
-      extensions: [ '.js', '.ts' ]
-    }
   }
 }

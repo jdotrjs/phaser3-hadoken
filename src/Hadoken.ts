@@ -3,7 +3,6 @@ import {
   NewInputs,
   RemovedInputs,
   HasSameKeys,
-  NewestTimestamp,
 } from './InputSnapshot'
 
 import { FilterFn } from 'ph/Common/Filters'
@@ -61,9 +60,13 @@ export const Events = {
   // InputReleased: 'inputreleased',
 }
 
+
 export type InputUpdateData = {
   // The inputs that were added relative to the last frame
   add: SemanticInput[],
+
+  // TODO: add boolean indicating if it was initial press (or add as specific
+  // event that gets emitted)
 
   // the inputs that were removed relative to the last frame
   remove: SemanticInput[],
@@ -157,7 +160,7 @@ export function NewHadoken<Cfg extends HadokenPipelineConfig>(
  * When a new input is added or removed Hadoken.Events.InputUpdate is emitted.
  * When an input update results in a move Hadoken.match Events.Match is emitted.
  *
- * @param ctx a Hadoken context
+ * @param {HadokenData<HadokenPipelineConfig>} ctx a Hadoken context
  */
 function mkHadokenUpdate(ctx: HadokenData<HadokenPipelineConfig>): () => void {
   const checkMatch = (matched: [string, object | null], cur: MoveDef): [string, object | null] => {
@@ -255,6 +258,26 @@ function maybeCullHistory(ctx: HadokenData<HadokenPipelineConfig>) {
   }
 }
 
+/**
+ * Processes a new adapter state for potentially several state changes at once.
+ * This is used so that we can create a new record of change when more than
+ * one input state has been updated since the last time we were able to check
+ * the adapter.
+ *
+ * A concrete reason we might use this is if we have to poll an adapter for
+ * input state (e.g. the gamepad) vs listening for adapter events (e.g.
+ * keyboard).
+ *
+ * The hadoken context is mutated as a result of this update
+ *
+ * @param {HadokenData<HadokenPipelineConfig>} ctx the underlying data object
+ *   for Hadoken that is used to track input state; this will be mutated as
+ *   a result of calling batch update
+ * @param {SemanticInput[]} keysAdded newly engaged inputs
+ * @param {SemanticInput[]} keysRemoved things that are no longer being pressed
+ * @param {number} ts an adapter sourced timestamp to track when this reading
+ *   was taken
+ */
 export function MaybeBatchUpdate(
   ctx: HadokenData<HadokenPipelineConfig>,
   keysAdded: SemanticInput[],
