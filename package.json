@@ -1,7 +1,7 @@
 {
   "name": "phaser3-hadoken",
   "description": "An input manager library that supports easy fighting-game style input events for Phaser 3.",
-  "version": "0.1.0-r2",
+  "version": "0.1.0-r3",
   "main": "./dist/hadoken.min.js",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/jdotrjs/phaser3-hadoken/issues"
   },
-  "license": "MIT",
+  "license": "CreativeCommons BY-NC",
   "devDependencies": {
     "@types/lodash": "^4.14.117",
     "babel-cli": "^6.26.0",
