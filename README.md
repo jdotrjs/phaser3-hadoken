@@ -34,7 +34,7 @@ script tag:
 ```html
 <script
   type="text/javascript"
-  src="https://github.com/jdotrjs/phaser3-hadoken/releases/download/v0.1.0/hadoken.min.js"
+  src="https://github.com/jdotrjs/phaser3-hadoken/releases/download/v0.2.0-r1/hadoken.min.js"
 ></script>
 ```
 
