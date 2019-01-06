@@ -49,6 +49,20 @@ export class Hadoken extends HadokenBase<GamepadHadokenConfig> {
   isStandardMapping(): boolean | null {
     return isStandardMapping(this.hadokenData.config.gamepad)
   }
+
+  /**
+   * This changes the button mapping for the Gamepad Hadoken. It won't impact
+   * any previously simpled inputs but all future data will be interpreted
+   * using it.
+   *
+   * If the player was holding down a previously mapped button but is not post
+   * remapping then it will appear as if the released the input.
+   *
+   * @param {ButtonMap} newMapping the new gamepad mapping that should be used
+   */
+  remap(newMapping: ButtonMap) {
+    this.hadokenData.config.buttonMap = newMapping
+  }
 }
 
 export type ButtonDef = StickDef | TriggerDef | DigitalDef

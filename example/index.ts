@@ -187,8 +187,8 @@ class DemoScene extends Phaser.Scene {
     const row1 = this.controls[0].height / 2
     this.controls[0].setY(row1)
     const row2 = row1 +this.controls[0].height + 4
-    this.controls.push(this.add.text(col1, row2, ' : S', txtCfg))
-    this.controls.push(this.add.text(col2, row1, ' : D', txtCfg))
+    this.controls.push(this.add.text(col1, row2, ' : D', txtCfg))
+    this.controls.push(this.add.text(col2, row1, ' : S', txtCfg))
     this.controls.push(this.add.text(col2, row2, ' : F', txtCfg))
     this.controls.push(this.add.text(col3, row1 + (row2 - row1) / 2, ' : G', txtCfg))
 
@@ -327,6 +327,20 @@ class DemoScene extends Phaser.Scene {
     }
   }
 
+  invertAxis(x: boolean, y: boolean): boolean {
+    if (!this.gph) {
+      alert('Unable to remap joystick axis until gamepad connected.')
+      return false
+    }
+
+    const newMapping: Hadoken.Adapter.Gamepad.ButtonMap = [
+      ...Cfg.GamepadButtons,
+      Cfg.mkInvertedLeftJoystick(x, y)
+    ]
+    this.gph.remap(newMapping)
+    return true
+  }
+
   update() {
     this._drawInputHistory()
     if (this.hadoken && this.hadoken.hadokenData.matchedMove !== null) {
@@ -356,8 +370,8 @@ export function selectKeymap(newmap: 'qwerty' | 'dvorak') {
 
   const nowQwerty = newmap === 'qwerty'
   const letters = nowQwerty
-    ? ['A', 'S', 'D', 'F', 'G']
-    : ['A', 'O', 'E', 'U', 'I']
+    ? ['A', 'D', 'S', 'F', 'G']
+    : ['A', 'E', 'O', 'U', 'I']
   letters.forEach((l, i) => { scn.controls[i].setText(` : ${l}`) })
 
   const qwEle = <HTMLElement>document.getElementById('keymap-qwerty')
@@ -381,12 +395,50 @@ export function selectInput(typ: string) {
   gpEle.className = 'selectable' + (nowKB ? '' : ' selected')
 
   const keymapEle = <HTMLElement>document.getElementById('keymap-select-section')
+  const gamepadEle = <HTMLElement>document.getElementById('axis-config-section')
   if (nowKB) {
     keymapEle.style.display = 'block'
+    gamepadEle.style.display = 'none'
     selectKeymap(scn.keymap)
   } else {
-    const letters = ['A', 'B', 'X', 'Y', 'LS']
+    const letters = ['A', 'X', 'B', 'Y', 'LS']
     letters.forEach((l, i) => { scn.controls[i].setText(` : ${l}`) })
     keymapEle.style.display = 'none'
+    gamepadEle.style.display = 'block'
+  }
+}
+
+function curInversion(name: string) {
+  ['none', 'horizontal', 'vertical', 'both'].forEach(n => {
+    const ele = document.getElementById(`invert-${n}`)
+    ele.className = n === name ? 'selectable selected' : 'selectable'
+  })
+}
+
+export function invertNone() {
+  const scn = <DemoScene>game.scene.getScene('demoscene')
+  if (scn.invertAxis(false, false)) {
+    curInversion('none')
+  }
+}
+
+export function invertX() {
+  const scn = <DemoScene>game.scene.getScene('demoscene')
+  if (scn.invertAxis(true, false)) {
+    curInversion('horizontal')
+  }
+}
+
+export function invertY() {
+  const scn = <DemoScene>game.scene.getScene('demoscene')
+  if (scn.invertAxis(false, true)) {
+    curInversion('vertical')
+  }
+}
+
+export function invertXY() {
+  const scn = <DemoScene>game.scene.getScene('demoscene')
+  if (scn.invertAxis(true, true)) {
+    curInversion('both')
   }
 }

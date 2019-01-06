@@ -75,7 +75,7 @@ export const ABSOLUTE_DIRECTIONS = [
 export const DIRECTIONS = Object.keys(DPAD).map(k => DPAD[k])
 
 // configures inputs for a gamepad
-export const GamepadInputs = [
+export const GamepadButtons = [
   mkButtonInput(StandardButtons.LeftDpad.Up, 'up'),
   mkButtonInput(StandardButtons.LeftDpad.Down, 'down'),
   mkButtonInput(StandardButtons.LeftDpad.Left, 'left'),
@@ -86,11 +86,35 @@ export const GamepadInputs = [
   mkButtonInput(StandardButtons.RightCluster.Up, 'kick:hard'),
   mkButtonInput(StandardButtons.Right.Trigger, 'kick:light'),
   mkButtonInput(StandardButtons.Left.Shoulder, 'guard'),
-  mkStandardLeftStickInput(
+]
+
+const GamepadJoystick = mkStandardLeftStickInput(
+  'left-stick',
+  mkBasicStickDpadMapper(),
+  ABSOLUTE_DIRECTIONS,
+)
+
+export const mkInvertedLeftJoystick = (x, y) => {
+  const def = mkStandardLeftStickInput(
     'left-stick',
     mkBasicStickDpadMapper(),
     ABSOLUTE_DIRECTIONS,
-  ),
+  )
+
+  if (x) {
+    def.horizontalAxis.right = def.horizontalAxis.right * -1
+  }
+
+  if (y) {
+    def.verticalAxis.up = def.verticalAxis.up * -1
+  }
+
+  return def
+}
+
+export const GamepadInputs = [
+  ...GamepadButtons,
+  GamepadJoystick,
 ]
 
 // All the non-movement actions a player could take as part of a move sequence
