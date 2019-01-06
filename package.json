@@ -34,7 +34,7 @@
     "build:prod": "webpack --mode production",
     "build:example": "webpack --mode development --config ./example/webpack.config.js",
     "build:watch": "webpack --watch --mode development",
-    "run:demo": "http-server -p 8888 -o http://localhost:8888/example",
+    "run:demo": "http-server -c -1 -p 8888 -o http://localhost:8888/example",
     "lint": "eslint src/**.js",
     "lint:fix": "eslint src/**.js --fix"
   },
