@@ -16,7 +16,7 @@ type HadokenKeyboardConfig = HadokenPipelineConfig & {
 /**
  * Hadoken implementation that supports keyboard input.
  */
-export class Hadoken extends HadokenBase<HadokenKeyboardConfig> {
+export class Hadoken extends HadokenBase<HadokenKeyboardConfig, MappingFn> {
   constructor(scn: Phaser.Scene, cfg: HadokenKeyboardConfig) {
     super(scn, cfg)
 
@@ -44,5 +44,9 @@ export class Hadoken extends HadokenBase<HadokenKeyboardConfig> {
     }
 
     MaybeRemoveKey(this.hadokenData, sem)
+  }
+
+  remap(newMapping: MappingFn): void {
+    this.hadokenData.config.keymapFn = newMapping
   }
 }

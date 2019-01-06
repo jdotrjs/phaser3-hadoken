@@ -94,7 +94,7 @@ export type AdapterSyncFn<T extends HadokenPipelineConfig> =
   (data: HadokenData<T>) => void
 
 // TODO: rewrite so that you can use multiple adapters per Hadoken
-export class Hadoken<T extends HadokenPipelineConfig> {
+export abstract class Hadoken<T extends HadokenPipelineConfig, M> {
   hadokenData: HadokenData<T>
   emitter: Phaser.Events.EventEmitter
 
@@ -126,6 +126,22 @@ export class Hadoken<T extends HadokenPipelineConfig> {
 
     return Object.keys(this.hadokenData.processedHistory.slice(-1)[0].state)
   }
+
+  /**
+   * This changes the button mapping for the Hadoken implementation. It won't
+   * impact any previously simpled inputs but all future data will be
+   * interpreted using it.
+   *
+   * If the player was holding down a previously mapped button but is not post
+   * remapping then it will appear as if the released the input.
+   *
+   * It's the responsibility of a particular Hadoken adapter implementation to
+   * understand how to apply a remapping.
+   *
+   * @param {M} newMapping the new gamepad mapping that should be used for
+   *   processing input
+   */
+  abstract remap(newMapping: M): void
 }
 
 export function NewHadoken<Cfg extends HadokenPipelineConfig>(
