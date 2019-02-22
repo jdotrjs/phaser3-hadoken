@@ -1,3 +1,6 @@
+**Note**: Phaser 3.16 changed the input system in non-trivial ways. This library
+hasn't been tested under that version.
+
 #### Table of Contents
 - [Demo](#demo)
 - [Get it: direct link](#get-it-direct-link)
